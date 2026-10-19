@@ -1,0 +1,758 @@
+<title>高明補習班 LINE 助理</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* 左欄：家長看到的 LINE 聊天室（模擬）；右欄：每則回覆「背後發生什麼」。窄螢幕時上下排列。 */
+:root {
+  --bg: #edf1f6;
+  --surface: #ffffff;
+  --chat: #f3f5f8;
+  --ink: #1f2733;
+  --muted: #5b6676;
+  --line: #d6deea;
+  --accent: #2f6fdb;
+  --accent-ink: #ffffff;
+  --accent-soft: #e3ebfa;
+  --r-fixed: #1f9d74;
+  --r-ai: #7b5be6;
+  --r-fallback: #b8740a;
+  --r-human: #0e8fb0;
+  --r-paused: #7d8798;
+  --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141b; --surface: #18202a; --chat: #131a22; --ink: #e5eaf1; --muted: #9ba7b6; --line: #2a3441;
+    --accent: #6f9cf2; --accent-ink: #0c1420; --accent-soft: #1c2940;
+    --r-fixed: #3cc596; --r-ai: #a68ef6; --r-fallback: #e2a33f; --r-human: #3bb8d6; --r-paused: #919cad;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141b; --surface: #18202a; --chat: #131a22; --ink: #e5eaf1; --muted: #9ba7b6; --line: #2a3441;
+  --accent: #6f9cf2; --accent-ink: #0c1420; --accent-soft: #1c2940;
+  --r-fixed: #3cc596; --r-ai: #a68ef6; --r-fallback: #e2a33f; --r-human: #3bb8d6; --r-paused: #919cad;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.top { padding-block: 28px 20px; }
+.top-inner { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; }
+.eyebrow { margin: 0 0 4px; font-size: 12.5px; letter-spacing: .08em; color: var(--muted); }
+h1 { margin: 0; font-size: clamp(24px, 4vw, 32px); font-weight: 700; letter-spacing: .01em; text-wrap: balance; }
+.lede { margin: 6px 0 0; max-width: 42em; color: var(--muted); }
+.status { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-size: 13px; }
+.status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--status-color, var(--r-paused)); }
+
+.layout { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 28px; align-items: start; padding-block: 0 40px; }
+@media (max-width: 880px) { .layout { grid-template-columns: minmax(0, 1fr); } .phone { max-width: 460px; width: 100%; margin: 0 auto; } }
+
+.phone { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.sim-bar { background: var(--ink); color: var(--bg); font-size: 11.5px; text-align: center; padding: 4px 8px; letter-spacing: .04em; }
+.phone-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-weight: 700; display: grid; place-items: center; flex: none; }
+.avatar.sm { width: 28px; height: 28px; font-size: 13px; }
+.who b { display: block; font-size: 15px; }
+.who span { font-size: 12px; color: var(--muted); }
+
+.log { height: clamp(320px, 54vh, 480px); overflow-y: auto; background: var(--chat); padding: 14px 12px 18px; display: flex; flex-direction: column; gap: 12px; }
+.user { align-self: flex-end; max-width: 80%; background: var(--accent); color: var(--accent-ink); padding: 8px 13px; border-radius: 18px 18px 6px 18px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.bot { display: flex; gap: 8px; align-items: flex-start; }
+.col { display: flex; flex-direction: column; gap: 6px; max-width: 84%; min-width: 0; }
+.bubble { background: var(--surface); border: 1px solid var(--line); padding: 8px 13px; border-radius: 6px 18px 18px 18px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14.5px; }
+.quick { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--accent); color: var(--accent); background: var(--surface); border-radius: 999px; padding: 3px 11px; font-size: 13px; cursor: pointer; }
+.chip:hover { background: var(--accent-soft); }
+.chip:disabled { opacity: .55; cursor: wait; }
+.tag { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); }
+.dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.note { align-self: center; background: var(--line); color: var(--ink); font-size: 12.5px; padding: 3px 12px; border-radius: 999px; text-align: center; }
+.typing span { display: inline-block; width: 6px; height: 6px; margin: 0 2px; border-radius: 50%; background: var(--muted); animation: blink 1.2s infinite ease-in-out; }
+.typing span:nth-child(2) { animation-delay: .2s; } .typing span:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .typing span { animation: none; opacity: .7; } }
+
+.composer { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--line); background: var(--surface); }
+.composer input { flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; background: var(--chat); }
+.send { border: 0; border-radius: 999px; padding: 8px 16px; background: var(--accent); color: var(--accent-ink); font-weight: 700; cursor: pointer; flex: none; }
+.send:disabled, .composer input:disabled { opacity: .55; cursor: wait; }
+.menu-toggle { width: 100%; border: 0; border-top: 1px solid var(--line); background: var(--surface); padding: 8px; color: var(--muted); font-size: 13px; cursor: pointer; }
+.menu { position: relative; }
+.menu img { display: block; width: 100%; height: auto; }
+.menu-hit { position: absolute; inset: 0; display: grid; grid-template-columns: 833fr 834fr 833fr; grid-template-rows: 1fr 1fr; }
+.menu-hit button { border: 0; background: transparent; cursor: pointer; }
+.menu-hit button:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.menu-hit button:disabled { cursor: wait; }
+
+.inspect { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.inspect h2 { margin: 0; font-size: 20px; }
+.inspect h3 { margin: 0 0 10px; font-size: 15px; }
+.trace { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+.route { align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 700; padding: 3px 11px; border-radius: 999px; color: var(--route); background: color-mix(in srgb, var(--route) 14%, transparent); }
+.route .dot { background: var(--route); }
+.trace .trace-title { margin: 0; font-size: 17px; text-wrap: balance; }
+.trace p { margin: 0; max-width: 60ch; }
+.facts { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; }
+.facts li { display: grid; grid-template-columns: 6.5em minmax(0, 1fr); gap: 10px; }
+.facts .k { color: var(--muted); }
+.facts .v { overflow-wrap: anywhere; }
+.code { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); background: var(--chat); border-radius: 8px; padding: 6px 10px; overflow-x: auto; white-space: nowrap; }
+.samples { display: flex; flex-wrap: wrap; gap: 8px; }
+.sample { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 7px 12px; font-size: 14px; cursor: pointer; text-align: left; }
+.sample:hover { border-color: var(--accent); }
+.sample:disabled { opacity: .55; cursor: wait; }
+.settings { display: flex; flex-direction: column; gap: 10px; }
+.switch { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
+.switch input { width: 18px; height: 18px; margin: 3px 0 0; flex: none; accent-color: var(--accent); }
+.switch input:disabled + span { color: var(--muted); }
+.ghost { align-self: flex-start; border: 1px solid var(--line); background: transparent; border-radius: 10px; padding: 6px 12px; cursor: pointer; }
+.fine { margin: 0; font-size: 13px; color: var(--muted); max-width: 62ch; }
+</style>
+
+<header class="top">
+  <div class="wrap top-inner">
+    <div>
+      <p class="eyebrow">家長自動回覆・第一期展示版</p>
+      <h1>高明補習班 LINE 助理</h1>
+      <p class="lede">按聊天室下方的選單，或直接打字問問題，就能看到家長會收到的回覆；「背後發生什麼」會說明每一則回覆是怎麼產生的。</p>
+    </div>
+    <span id="ai-status" class="status" role="status">正在確認能否使用 Claude…</span>
+  </div>
+</header>
+
+<main class="wrap layout">
+  <section class="phone" aria-label="家長的 LINE 聊天室（模擬）">
+    <div class="sim-bar">展示畫面・實際以 LINE App 顯示為準</div>
+    <div class="phone-head">
+      <div class="avatar" aria-hidden="true">高</div>
+      <div class="who"><b>高明補習班</b><span>AI 小助理・第一期</span></div>
+    </div>
+    <div id="log" class="log" role="log" aria-live="polite"></div>
+    <form id="composer" class="composer">
+      <label for="msg" class="sr">輸入訊息</label>
+      <input id="msg" autocomplete="off" maxlength="300" placeholder="輸入問題，例如：國三理化什麼時候上課？">
+      <button id="send" class="send" type="submit">送出</button>
+    </form>
+    <button id="menu-toggle" class="menu-toggle" type="button" aria-expanded="true" aria-controls="menu">點我開啟選單 ▼</button>
+    <div id="menu" class="menu">
+      <img id="menu-img" alt="圖文選單：課程介紹、榜單、交通資訊、聯絡我們、常見問題、家長綁定" width="2500" height="1686">
+      <div class="menu-hit" id="menu-hit"></div>
+    </div>
+  </section>
+
+  <aside class="inspect" aria-label="背後發生什麼">
+    <h2>背後發生什麼</h2>
+    <article id="trace" class="trace" aria-live="polite"></article>
+    <section>
+      <h3>試試這些問題</h3>
+      <div id="samples" class="samples"></div>
+    </section>
+    <section class="settings">
+      <h3>展示設定</h3>
+      <label class="switch"><input type="checkbox" id="toggle-ai" checked><span>用 Claude 回答打字的問題（關掉＝bot 沒設定 API key 時的樣子）</span></label>
+      <label class="switch"><input type="checkbox" id="toggle-closure" checked><span id="closure-label">示範公告：明天晚上颱風停課</span></label>
+      <button id="reset" type="button" class="ghost">重新開始對話</button>
+    </section>
+    <p class="fine">選單按鈕的回覆和正式 bot 完全相同，不會用到 Claude。打字的問題由你自己的 Claude 帳號回答：第一次會詢問是否允許，並使用你的 Claude 額度；正式 bot 則用補習班的 API key 呼叫 claude-haiku-5-5。課程、電話、地址都是示範資料。</p>
+  </aside>
+</main>
+
+<script>
+const DATA = __DATA__;
+const MENU_SRC = "data:image/png;base64,__MENU_B64__";
+
+// ===== 和 Python 版 bot 相同的判斷與固定回覆（app/bot.py、app/replies.py、app/knowledge.py、app/ai.py）
+const WEEK = "一二三四五六日";
+const MAIN_MENU = ["課程介紹", "行事曆", "榜單", "交通資訊", "聯絡我們", "常見問題"];
+const HELP_MENU = ["找真人客服", "聯絡我們", "常見問題"];
+const RESUME_WORD = "回到AI助理";
+const HANDOFF_WORDS = new Set(["找真人客服", "真人客服", "找真人", "轉真人", "我要找真人"]);
+const RESUME_WORDS = new Set(["回到ai助理", "回到ai", "回到ai小助理", "結束真人客服"]);
+const PAUSE_MINUTES = 30;
+const HISTORY_LIMIT = 8;
+const MENU_LABELS = ["課程介紹", "榜單", "交通資訊", "聯絡我們", "常見問題", "家長綁定"];
+const INTENT_LABELS = { course: "課程", fee: "收費", honor_roll: "榜單", traffic: "交通", contact: "聯絡", policy: "規定",
+  enrollment: "招生試聽", announcement: "公告停課", personal: "個人資料", greeting: "打招呼", other: "其他" };
+// ai：checking 確認中／ready 可用／off 手動關閉／unavailable 這裡不能用／denied 沒有允許
+const state = { ai: "checking", sample: null, closure: true, paused: false, history: [], busy: false, epoch: 0, controller: null };
+
+function taipei(offsetDays = 0) {
+  const t = new Date(Date.now() + 8 * 3600e3 + offsetDays * 86400e3);  // 台灣沒有日光節約時間
+  return { y: t.getUTCFullYear(), m: t.getUTCMonth() + 1, d: t.getUTCDate(), wd: (t.getUTCDay() + 6) % 7,
+           hh: String(t.getUTCHours()).padStart(2, "0"), mm: String(t.getUTCMinutes()).padStart(2, "0") };
+}
+function todayLine() {
+  const t = taipei();
+  return `今天是 ${t.y} 年 ${t.m} 月 ${t.d} 日（星期${WEEK[t.wd]}），現在時間 ${t.hh}:${t.mm}（台灣時間）。`;
+}
+function notices() {
+  if (!state.closure) return [];
+  const t = taipei(1);
+  return [{ title: `【示範】颱風停課：${t.m}/${t.d} 晚上課程停課`, category: "closure",
+            body: `因颱風影響，明天（${t.m}/${t.d}）晚上所有課程停課，補課時間另行通知。` }];
+}
+const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+const msg = (text, quick) => ({ text: text.slice(0, 5000), quick: (quick || []).slice(0, 13) });
+const feeText = (fee) => (fee ? `${fee.toLocaleString("en-US")} 元／${DATA.feeUnit}` : "請洽櫃台");
+
+const pic = (item) => (item.has_image || item.image_token ? "（附圖）" : "");
+const GRADE_LABEL = { 6: "國小", 7: "國一", 8: "國二", 9: "國三" };
+function gradesText(grades) {
+  const g = [...new Set(grades || [])].sort((a, b) => a - b);
+  if (!g.length || g.join() === "6,7,8,9") return "";
+  if (g.join() === "7,8,9") return "國中";
+  return g.map((x) => GRADE_LABEL[x] || String(x)).join("、");
+}
+const gradeTag = (item) => gradesText(item.grades);
+const forLine = (item) => (gradeTag(item) ? `適用年級：${gradeTag(item)}（其他年級不適用）\n` : "");
+const tag = (n) => (gradeTag(n) && !n.title.includes(gradeTag(n)) ? `（${gradeTag(n)}）` : "");
+function knowledgeText() {
+  const parts = ["〈補習班資料〉以下是目前所有公開資訊，回答只能根據這些內容。", "## 常見問題與規定"];
+  parts.push(...(DATA.articles.length ? DATA.articles.map((a) => `【${a.title}】${pic(a)}\n${a.content}`) : ["（尚無資料）"]));
+  parts.push("## 目前有效的公告");
+  const ns = notices();
+  parts.push(...(ns.length ? ns.map((n) => `【${n.title}】${pic(n)}\n${forLine(n)}${n.body}`) : ["（目前沒有公告）"]));
+  parts.push("## 公開課表");
+  parts.push(DATA.courses.map((c) => `・${c.name}（${c.grade_label}・${c.subject}）：${c.schedule}，一週 ${c.times_per_week} 次，教室 ${c.room || "未定"}，學費 ${feeText(c.fee)}${c.description ? "；" + c.description : ""}`).join("\n") || "（尚無公開課程）");
+  parts.push("## 榜單");
+  parts.push(DATA.honors.map((h) => `・${h.school_year} 學年度 ${h.category}：${h.display_name}（${h.school_name || "學校未填"}）${h.achievement}`).join("\n") || "（尚無公開榜單）");
+  return parts.join("\n\n");
+}
+
+// ---- 固定回覆（app/replies.py）
+const HOW_TO_BIND = "綁定方式（擇一）：\n1. 點「找真人客服」，留下孩子的姓名，櫃台確認後直接幫您綁定\n2. 向櫃台索取 8 碼的綁定碼，在這裡輸入「綁定 綁定碼」，例如：綁定 AB12CD34";
+const R = {
+  welcome: () => msg(`您好！歡迎加入${DATA.school} 👋\n我是 AI 小助理，可以回答課程、上課時間、行事曆、收費、交通和榜單等問題。\n\n・點下方選單可以快速查詢\n・也可以直接打字問我，例如「國二數學什麼時候上課？」\n\n需要真人協助時，請點「找真人客服」。`, MAIN_MENU),
+  greeting: () => msg(`您好！我是${DATA.school}的 AI 小助理 😊\n可以點下方選單，或直接打字問我，例如「國二數學什麼時候上課？」`, MAIN_MENU),
+  thanks: () => msg("不客氣 😊 還有其他問題隨時問我！", MAIN_MENU),
+  courses(list, ns) {
+    if (!list.length) return msg("目前還沒有公開的課程資訊，請點「聯絡我們」洽詢櫃台。", HELP_MENU);
+    const lines = ["📚 課程與上課時間", ...ns.filter((n) => n.category === "closure").map((n) => `⚠️ 公告：${n.title}${tag(n)}`)];
+    const ordered = [...list].sort((a, b) => (a.grade || 99) - (b.grade || 99) || cmp(a.name, b.name));
+    let current = null;
+    for (const c of ordered) {
+      if (c.grade_label !== current) { current = c.grade_label; lines.push(`\n【${current}】`); }
+      lines.push(`・${c.name}\n  ${c.schedule}\n  學費 ${feeText(c.fee)}`);
+    }
+    lines.push("\n想知道更多，可以直接打字問我，例如「國二數學一週上幾次？」");
+    return msg(lines.join("\n"));
+  },
+  courseDetail(list) {
+    const blocks = list.map((c) => [`📚 ${c.name}`, `${c.schedule}（一週 ${c.times_per_week} 次）`, `教室 ${c.room || "未定"}・學費 ${feeText(c.fee)}`, ...(c.description ? [c.description] : [])].join("\n"));
+    return msg(blocks.join("\n\n") + "\n\n想報名或試聽，可以點「找真人客服」詢問櫃台。");
+  },
+  noCourse(label, others) {
+    let text = `目前沒有${label}的班 🙏`;
+    if (others.length) text += "\n" + `${others[0].grade_label}目前有：` + others.map((c) => c.name).join("、");
+    return msg(text + "\n\n想開新班或有其他問題，可以點「找真人客服」詢問櫃台。", ["課程介紹", "找真人客服"]);
+  },
+  noSeniorHigh: () => msg("目前沒有高中的班 🙏 補習班現在只有國小（六年級）和國中的課程。\n想確認的話，可以點「找真人客服」詢問櫃台。", ["課程介紹", "找真人客服"]),
+  closure(ns) {
+    const body = ns.filter((n) => n.category === "closure").map((n) => `【${n.title}】${tag(n)}\n${n.body}`).join("\n\n");
+    return msg(`⚠️ 最新公告\n\n${body}`);
+  },
+  noticeList: (items) => msg(`📢 公告\n\n${items.map((n) => `【${n.title}】${tag(n)}\n${n.body}`).join("\n\n")}`),
+  nothing(kind, grades = "", others = [], quick = null) {
+    const lines = [grades ? `目前沒有${grades}的${kind} 🙏` : `目前沒有${kind} 🙏`];
+    if (others.length) lines.push(`（現在有的是：${others.slice(0, 5).map((n) => `${gradeTag(n) || "全部年級"}的「${n.title}」`).join("、")}）`);
+    lines.push("\n想確認的話，可以點「找真人客服」詢問櫃台。");
+    return msg(lines.join("\n"), quick || HELP_MENU);
+  },
+  calendar(ns) {
+    const items = ns.filter((n) => n.category === "calendar");
+    if (!items.length) return msg("📅 目前還沒有公布行事曆。\n想知道近期的活動或停課安排，可以點「找真人客服」詢問櫃台。", HELP_MENU);
+    return msg(`📅 行事曆\n\n${items.map((n) => `【${n.title}】${tag(n)}\n${n.body}`).join("\n\n")}`);
+  },
+  honor(rows) {
+    if (!rows.length) return msg("榜單整理中，請稍後再查詢 🙏");
+    const lines = [];
+    let year = null;
+    for (const r of rows) {
+      if (r.school_year !== year) { year = r.school_year; lines.push(`🏆 ${year} 學年度榜單`); }
+      lines.push(`・${r.display_name}${r.school_name ? `（${r.school_name}）` : ""} ${r.category} ${r.achievement}`);
+    }
+    lines.push("\n恭喜同學們！想了解課程，請點「課程介紹」。");
+    return msg(lines.join("\n"));
+  },
+  kbCategory(category, header, quick) {
+    const items = DATA.articles.filter((a) => a.category === category);
+    if (!items.length) return msg(`${header}\n\n這項資訊整理中，請點「找真人客服」詢問櫃台。`, HELP_MENU);
+    return msg(`${header}\n\n${items.map((a) => `【${a.title}】\n${a.content}`).join("\n\n")}`, quick);
+  },
+  contact: () => R.kbCategory("contact", "☎️ 聯絡我們", ["找真人客服", "交通資訊"]),
+  traffic: () => R.kbCategory("traffic", "🚌 交通資訊"),
+  faqMenu() {
+    const titles = DATA.articles.map((a) => a.title);
+    if (!titles.length) return msg("常見問題整理中，可以直接打字問我。");
+    let text = "❓ 常見問題\n點下方按鈕看答案，或直接打字問我：";
+    if (titles.length > 13) text += "\n" + titles.slice(13).map((t) => `・${t}`).join("\n");
+    return msg(text, titles);
+  },
+  kbAnswer: (a) => msg(`【${a.title}】\n${a.content}`),
+  bindingNotReady: () => msg(`查詢孩子的課表、成績、到班、請假等「家長專屬功能」，要先綁定帳號 🙏\n\n${HOW_TO_BIND}\n\n綁定後目前可以查孩子的課表，其他功能陸續開放。現在有需要，請點「找真人客服」。`, ["家長綁定", "找真人客服"]),
+  bindingHelp: () => msg(`👨‍👩‍👧 家長綁定\n綁定後可以在這裡查孩子的課表，其他功能陸續開放。\n\n${HOW_TO_BIND}`, ["找真人客服", "聯絡我們"]),
+  handoff(minutes, contactInfo) {
+    let text = `好的，已轉給櫃台老師 🙋\n接下來 ${minutes} 分鐘內，您打的訊息會由專人回覆（AI 先暫停）。`;
+    if (contactInfo) text += `\n\n${contactInfo}`;
+    return msg(text + `\n\n想回到 AI 助理，請點「${RESUME_WORD}」。`, [RESUME_WORD]);
+  },
+  resume: () => msg("已回到 AI 助理模式，有問題隨時問我！", MAIN_MENU),
+  unknown: () => msg("這個問題我目前沒有資料可以回答 🙏\n可以點「找真人客服」，請櫃台老師協助您。", HELP_MENU),
+  aiReply: (text, needsHuman) => msg(text, needsHuman ? HELP_MENU : null),
+};
+const contactText = () => (DATA.articles.find((a) => a.category === "contact") || {}).content || "";
+
+// ---- 關鍵字比對（app/knowledge.py 的工具＋app/bot.py 的 _offline_decide()）
+const STOP_BIGRAMS = new Set(["補習", "習班", "請問", "可以", "什麼", "一下", "我想", "想要", "老師", "小孩", "孩子", "時候", "多少", "有沒", "沒有", "你們", "我們", "這個", "那個"]);
+const norm = (s) => String(s).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+function bigrams(s) {
+  const n = [...norm(s)], out = new Set();
+  for (let i = 0; i < n.length - 1; i++) { const b = n[i] + n[i + 1]; if (!STOP_BIGRAMS.has(b)) out.add(b); }
+  return out;
+}
+function searchArticles(question) {
+  const q = norm(question), qb = bigrams(question), scored = [];
+  for (const a of DATA.articles) {
+    let score = (a.keywords || []).filter((kw) => kw && q.includes(norm(kw))).length * 3;
+    for (const b of bigrams(a.title)) if (qb.has(b)) score += 1;
+    if (score >= 2) scored.push([score, a]);
+  }
+  return scored.sort((x, y) => y[0] - x[0]);   // 穩定排序：同分維持原本順序
+}
+const normalizeQuestion = (text) => text.replace(/[！-～]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+  .replace(/　/g, " ").replaceAll("甚麼", "什麼").replaceAll("甚么", "什麼").replaceAll("什么", "什麼");
+const GRADE_WORDS = { 6: /國小|小六|六年級/, 7: /國一|七年級|國中一年級/, 8: /國二|八年級|國中二年級/, 9: /國三|九年級|國中三年級/ };
+const JUNIOR_HIGH = /國中/;
+const SENIOR_HIGH = /高[一二三]|高中|十[一二]?年級/;
+const ANY_GRADE_WORD = new RegExp([...Object.values(GRADE_WORDS).map((r) => r.source), JUNIOR_HIGH.source].join("|"), "g");
+function gradeSet(text) {
+  const found = new Set(Object.entries(GRADE_WORDS).filter(([, re]) => re.test(text)).map(([g]) => Number(g)));
+  return found.size || !JUNIOR_HIGH.test(text) ? found : new Set([7, 8, 9]);
+}
+const forGrades = (items, grades) => (grades.size ? items.filter((i) => !(i.grades || []).length || i.grades.some((g) => grades.has(g))) : items);
+const SUBJECT_ALIASES = { "英語": "英文", "國語": "國文", "物理": "理化", "化學": "理化", "數理": "數學", "社會科": "社會" };
+function subjectSet(text) {
+  const found = new Set(DATA.subjects.filter((s) => s && text.includes(s)));
+  for (const [alias, real] of Object.entries(SUBJECT_ALIASES)) if (text.includes(alias) && DATA.subjects.includes(real)) found.add(real);
+  return found;
+}
+const PERSONAL = /成績|分數|考幾分|排名|錯題|到班了|有沒有到|出缺勤|缺席紀錄|餐費|餘額|幫.{0,8}請假|要請假|請個假|繳了沒|繳費紀錄|聯絡簿/;
+const CHILD = /孩子|小孩|女兒|兒子|小朋友|我家/;
+const CHILD_CLASSES = /課表|上什麼課|上哪些課|什麼課|哪些課|哪幾堂|幾點上課|上課時間|幾點下課|哪幾天/;
+const GREETING = /^(你好|您好|哈囉|哈啰|嗨|安安|早安|午安|晚安|老師好|老師您好|hi|hello|hey|在嗎|有人在嗎|請問)[\s!！~～。.,，?？]*$/i;
+const THANKS = /^(謝謝|感謝|謝啦|多謝|thanks?|thank you|thx|好的|好喔|好哦|好唷|ok|okay|收到|了解|瞭解|知道了)[\s!！~～。.,，]*(老師|你|您)?[\s!！~～。.,，謝]*$/i;
+const CLOSURE_WORDS = /停課|颱風|放假|停班|有沒有上課|有上課嗎|照常上課|要上課嗎|會上課嗎/;
+const CALENDAR_WORDS = /行事曆|行程|月曆/;
+const CALENDAR_TIME = /(這個月|本月|下個月|下月|這週|下週|這禮拜|下禮拜|這星期|下星期|最近|近期|這學期).{0,6}(安排|考試|上課|活動|行程|事)|\d{1,2}\s*[/月]\s*\d{1,2}/;
+const HONOR = /榜單|考上|錄取|上榜|金榜/;
+const NOTICE_KINDS = { exam: /考試|段考|模擬考|小考|月考|期中考|期末考|複習考|考什麼|考哪|範圍/, event: /活動|講座|說明會|家長會|家長日|典禮|比賽|營隊|聚會/, enrollment: /招生|寒假|暑假|寒輔|暑輔|先修|新班/ };
+const NOTICE_ANY = /公告|最新消息|消息|通知/;
+const KIND_LABEL = { exam: "考試公告", event: "活動公告", enrollment: "招生公告", closure: "停課公告", general: "公告", calendar: "行事曆" };
+const COURSE_ASK = /課|班|幾點|時間|時段|星期|禮拜|週|周|幾次|學費|多少錢|費用|價格|價錢|教室|報名|試聽|什麼時候|何時|多久|上幾/;
+const POLICY_WORDS = /補課|請假|缺課|退費|退錢|轉班|休學|停課|颱風|放假|停班/;
+const COURSE_LIST = /課表|上課時間|幾點上課|什麼時候上課|開課|開班|有哪些課|有什麼課|哪些班|什麼班|班級|課程/;
+const TOPICS = { traffic: /地址|在哪|位置|交通|停車|公車|捷運|怎麼去|怎麼走|接送/, contact: /電話|聯絡|客服|服務時間|營業時間/, fee: /學費|收費|費用|多少錢|價格|繳費/ };
+const FILLER = /請問|想問|問一下|我想|想要|想知道|知道|一下|你們|您們|貴班|補習班|這邊|那邊|有沒有|沒有|有|嗎|呢|吧|啊|喔|哦|耶|的|是|在|了|現在|目前|請|問|想|要|可以|資訊|資料|介紹|相關|看看|看|查詢|查|小孩|孩子|我家|我的|女兒|兒子|那|這|什麼|哪些|哪個|哪|我/g;
+function isBare(question, extraWords) {
+  let q = norm(question);
+  for (const w of [...extraWords].sort((a, b) => [...b].length - [...a].length)) if (norm(w)) q = q.split(norm(w)).join("");
+  q = q.replace(ANY_GRADE_WORD, "").replace(FILLER, "");
+  return [...q].length <= 1;
+}
+function stripGradesSubjects(text) {
+  let t = text.replace(ANY_GRADE_WORD, " ");
+  for (const s of DATA.subjects) t = t.split(s).join(" ");
+  return t;
+}
+const noticeKinds = (q) => new Set(Object.entries(NOTICE_KINDS).filter(([, re]) => re.test(q)).map(([k]) => k));
+function searchNotices(question, kinds) {
+  const everything = NOTICE_ANY.test(question), qb = bigrams(stripGradesSubjects(question)), scored = [];
+  for (const n of notices()) {
+    if (n.category === "closure" || n.category === "calendar") continue;
+    let score = 0;
+    for (const b of bigrams(stripGradesSubjects(n.title))) if (qb.has(b)) score += 1;
+    if (kinds.has(n.category)) score += 2;
+    if (score >= 2 || everything) scored.push([score, n]);
+  }
+  return scored.sort((x, y) => y[0] - x[0]).map(([, n]) => n);
+}
+const coursesNamed = (q) => DATA.courses.filter((c) => norm(q).includes(norm(c.name)));
+const coursesFor = (grades, subjects) => DATA.courses.filter((c) => (!grades.size || grades.has(c.grade)) && (!subjects.size || subjects.has(c.subject)));
+
+function offlineAnswer(text) {
+  const q = normalizeQuestion(text).trim();
+  const grades = gradeSet(q), label = gradesText([...grades]), subjects = subjectSet(q);
+  const calendars = notices().filter((n) => n.category === "calendar"), myCalendars = forGrades(calendars, grades);
+  const out = (intent, message, needsHuman, match) => ({ intent, message, needsHuman: !!needsHuman, match });
+  if (GREETING.test(q)) return out("greeting", R.greeting(), false, "打招呼");
+  if (THANKS.test(q)) return out("greeting", R.thanks(), false, "道謝");
+  if (PERSONAL.test(q) || (CHILD.test(q) && CHILD_CLASSES.test(q) && !grades.size && !subjects.size))
+    return out("personal", R.bindingNotReady(), false, "問到孩子的個人資料 → 說明要先綁定");
+  if (CLOSURE_WORDS.test(q)) {
+    const closures = notices().filter((n) => n.category === "closure"), mine = forGrades(closures, grades);
+    if (mine.length) return out("announcement", R.closure(mine), false, "有效的停課公告");
+    if (closures.length) return out("announcement", R.nothing("停課公告", label, closures), true, "只有別的年級的停課公告 → 直接說沒有");
+  }
+  if (CALENDAR_WORDS.test(q)) {
+    if (myCalendars.length) return out("announcement", R.calendar(myCalendars), false, "行事曆");
+    if (calendars.length) return out("announcement", R.nothing("行事曆", label, calendars), true, "只有別的年級的行事曆 → 直接說沒有");
+    return out("announcement", R.calendar([]), true, "還沒有公布行事曆");
+  }
+  if (HONOR.test(q)) return out("honor_roll", R.honor(DATA.honors), false, "榜單相關字詞");
+  const named = coursesNamed(q);
+  if (named.length) return out("course", R.courseDetail(named), false, "寫了班名：" + named.map((c) => c.name).join("、"));
+  const kinds = noticeKinds(q), hits = searchNotices(q, kinds);
+  if (kinds.size || hits.length) {
+    const mine = forGrades(hits, grades);
+    if (mine.length) return out("announcement", R.noticeList(mine), false, "公告：" + mine.map((n) => n.title).join("、"));
+    if (CALENDAR_TIME.test(q) && myCalendars.length) return out("announcement", R.calendar(myCalendars), false, "問時間 → 行事曆");
+    const kind = kinds.size === 1 ? KIND_LABEL[[...kinds][0]] : "公告";
+    if (hits.length) return out("announcement", R.nothing(kind, label, hits), true, "只有別的年級的公告 → 直接說沒有");
+    const strong = searchArticles(q).filter(([score]) => score >= 3).map(([, a]) => a);
+    if (strong.length) return out(strong[0].category, R.kbAnswer(strong[0]), false, `常見問題「${strong[0].title}」`);
+    return out("announcement", R.nothing(kind, label, [], myCalendars.length ? ["找真人客服", "行事曆", "聯絡我們"] : null), true,
+      `在問${kind}，但目前沒有 → 直接說沒有，不改回答別的`);
+  }
+  if (CALENDAR_TIME.test(q) && myCalendars.length) return out("announcement", R.calendar(myCalendars), false, "問日期 → 行事曆");
+  if (SENIOR_HIGH.test(q) && !grades.size) return out("course", R.noSeniorHigh(), true, "問高中的課程");
+  if ((grades.size || subjects.size) && !POLICY_WORDS.test(q) && (COURSE_ASK.test(q) || isBare(q, [...DATA.subjects, ...Object.keys(SUBJECT_ALIASES)]))) {
+    const pool = coursesFor(grades, subjects);
+    if (pool.length) return out("course", R.courseDetail(pool), false, "班級：" + pool.map((c) => c.name).join("、"));
+    const what = label + [...subjects].sort().join("、");
+    const others = subjects.size && grades.size === 1 ? coursesFor(grades, new Set()) : [];
+    return out("course", R.noCourse(what || "這個", others), true, "沒有開這個班 → 直接說沒有");
+  }
+  if (COURSE_LIST.test(q) && !POLICY_WORDS.test(q)) return out("course", R.courses(DATA.courses, notices()), false, "課程相關字詞 → 完整課表");
+  const found = searchArticles(q);
+  if (found.length) return out(found[0][1].category, R.kbAnswer(found[0][1]), false, `知識庫「${found[0][1].title}」（${found[0][0]} 分）`);
+  if (TOPICS.traffic.test(q)) return out("traffic", R.traffic(), false, "交通相關字詞");
+  if (TOPICS.contact.test(q)) return out("contact", R.contact(), false, "聯絡相關字詞");
+  if (TOPICS.fee.test(q)) return out("fee", R.kbCategory("fee", "💰 學費與繳費"), false, "收費相關字詞");
+  return out("other", R.unknown(), true, "都沒有找到 → 建議找真人客服");
+}
+
+// ---- 圖文選單按鈕送出的文字 → 固定回覆
+const COMMANDS = {
+  "課程介紹": ["course", () => R.courses(DATA.courses, notices()), "replies.courses()"],
+  "課表": ["course", () => R.courses(DATA.courses, notices()), "replies.courses()"],
+  "行事曆": ["announcement", () => R.calendar(notices()), "replies.calendar()"],
+  "本月行事曆": ["announcement", () => R.calendar(notices()), "replies.calendar()"],
+  "榜單": ["honor_roll", () => R.honor(DATA.honors), "replies.honor()"],
+  "交通資訊": ["traffic", () => R.traffic(), "replies.traffic()"],
+  "交通": ["traffic", () => R.traffic(), "replies.traffic()"],
+  "聯絡我們": ["contact", () => R.contact(), "replies.contact()"],
+  "常見問題": ["faq", () => R.faqMenu(), "replies.faq_menu()"],
+};
+const BINDING_WORDS = new Set(["家長綁定", "綁定帳號", "綁定", "我要綁定"]);
+const CHILD_WORDS = new Set(["孩子的課表", "孩子課表", "小孩的課表", "我的孩子"]);
+const BINDING_CODE = /^(?:綁定碼?|binding)?\s*[:：]?\s*([0-9a-f]{8})$/i;
+const COMMAND_FACTS = {
+  course: () => [["資料", `v_public_timetable（${DATA.courses.length} 個班）`], ...(notices().length ? [["公告", "有效的停課公告會自動放在最上面"]] : [])],
+  honor_roll: () => [["資料", `honor_roll（${DATA.honors.length} 筆，都已取得家長同意）`]],
+  traffic: () => [["資料", "kb_articles（分類 traffic）"]],
+  contact: () => [["資料", "kb_articles（分類 contact）"], ["按鈕", "附上「找真人客服」"]],
+  faq: () => [["資料", `kb_articles（${DATA.articles.length} 題，標題變成快速回覆按鈕）`]],
+  announcement: () => [["資料", "公告裡分類是「行事曆」的那一則＝「補習班資料／行事曆」資料夾最新丟進來的那一份"], ["附圖", "有圖片的話，文字後面接著傳圖片"]],
+  binding: () => [["綁定碼", "後台「學生與家長」→ 家長旁邊的「發綁定碼」"], ["綁定後", "家長可以查孩子的課表"]],
+};
+
+// ---- 送給 Claude 的內容（app/ai.py：規則＋補習班資料＋今天日期，再加最近的對話）
+function dialogueTurns(question) {
+  const merged = [];
+  for (const t of [...state.history, { role: "user", content: question }]) {
+    const last = merged[merged.length - 1];
+    if (last && last.role === t.role) last.content += "\n" + t.content;
+    else merged.push({ role: t.role, content: t.content });
+  }
+  while (merged.length && merged[0].role !== "user") merged.shift();
+  return merged;
+}
+const plain = (text) => text.replace(/\*\*|__/g, "").replace(/^#+\s*/gm, "").trim();
+
+async function askClaude(question, signal) {
+  const prompt = [DATA.rules, "", knowledgeText(), "", todayLine(), "",
+    "請只回覆一個 JSON 物件，不要有任何其他文字，格式如下：",
+    `{"reply": "給家長的訊息", "intent": "${DATA.intents.join("|")}", "needs_human": false, "used_titles": ["用到的資料標題"]}`,
+    "", "接下來是家長和你的對話，請回覆最後一則家長訊息。"].join("\n");
+  const historyCount = state.history.length;
+  const turns = [{ role: "user", content: prompt }, ...dialogueTurns(question)];
+  const started = performance.now();
+  const value = await state.sample.json(turns, { modelTier: "quick", cache: false, signal });
+  const reply = value && typeof value.reply === "string" ? plain(value.reply) : "";
+  if (!reply) throw { code: "invalid_json" };
+  return {
+    reply, intent: DATA.intents.includes(value.intent) ? value.intent : "other",
+    needsHuman: value.needs_human === true,
+    used: Array.isArray(value.used_titles) ? value.used_titles.map(String) : [],
+    seconds: ((performance.now() - started) / 1000).toFixed(1), promptChars: prompt.length, historyCount,
+  };
+}
+
+// ===== 畫面
+const $ = (id) => document.getElementById(id);
+const log = $("log");
+const narrow = window.matchMedia("(max-width: 880px)");
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+const ROUTES = {
+  fixed: ["固定回覆", "--r-fixed"], ai: ["Claude 回答", "--r-ai"], fallback: ["關鍵字比對", "--r-fallback"],
+  human: ["轉給櫃台老師", "--r-human"], paused: ["AI 暫停中", "--r-paused"], resume: ["回到 AI 助理", "--r-human"],
+};
+
+function scrollDown() { log.scrollTop = log.scrollHeight; }
+function clearQuick() { log.querySelectorAll(".quick").forEach((q) => q.remove()); }
+function addNote(text) { const n = document.createElement("div"); n.className = "note"; n.textContent = text; log.append(n); scrollDown(); }
+function addUser(text) {
+  clearQuick();
+  const u = document.createElement("div"); u.className = "user"; u.textContent = text; log.append(u); scrollDown();
+}
+function botRow() {
+  const row = document.createElement("div"); row.className = "bot";
+  const av = document.createElement("div"); av.className = "avatar sm"; av.textContent = "高"; av.setAttribute("aria-hidden", "true");
+  row.append(av);
+  return row;
+}
+function addBot(messages, route) {
+  messages.forEach((m, i) => {
+    const row = botRow();
+    const col = document.createElement("div"); col.className = "col";
+    const b = document.createElement("div"); b.className = "bubble"; b.textContent = m.text; col.append(b);
+    if (m.quick.length) {
+      const q = document.createElement("div"); q.className = "quick";
+      for (const label of m.quick) {
+        const c = document.createElement("button"); c.type = "button"; c.className = "chip"; c.textContent = label.slice(0, 20);
+        c.addEventListener("click", () => send(label)); q.append(c);
+      }
+      col.append(q);
+    }
+    if (i === messages.length - 1) {
+      const [label, color] = ROUTES[route];
+      const t = document.createElement("div"); t.className = "tag";
+      const d = document.createElement("span"); d.className = "dot"; d.style.background = `var(${color})`;
+      t.append(d, document.createTextNode(label)); col.append(t);
+    }
+    row.append(col); log.append(row);
+  });
+  scrollDown();
+}
+function addTyping() {
+  const row = botRow(); row.id = "typing";
+  const b = document.createElement("div"); b.className = "bubble typing"; b.setAttribute("aria-label", "輸入中");
+  for (let i = 0; i < 3; i++) b.append(document.createElement("span"));
+  row.append(b); log.append(row); scrollDown();
+}
+function removeTyping() { $("typing")?.remove(); }
+
+function showTrace({ route, title, why, facts = [], code }) {
+  const tr = $("trace"); tr.replaceChildren();
+  const [label, color] = ROUTES[route];
+  tr.style.setProperty("--route", `var(${color})`);
+  const chip = document.createElement("span"); chip.className = "route";
+  const d = document.createElement("span"); d.className = "dot"; chip.append(d, document.createTextNode(label));
+  const h = document.createElement("h3"); h.className = "trace-title"; h.textContent = title;
+  const p = document.createElement("p"); p.textContent = why;
+  tr.append(chip, h, p);
+  if (facts.length) {
+    const ul = document.createElement("ul"); ul.className = "facts";
+    for (const [k, v] of facts) {
+      const li = document.createElement("li");
+      const ks = document.createElement("span"); ks.className = "k"; ks.textContent = k;
+      const vs = document.createElement("span"); vs.className = "v"; vs.textContent = v;
+      li.append(ks, vs); ul.append(li);
+    }
+    tr.append(ul);
+  }
+  if (code) { const c = document.createElement("div"); c.className = "code"; c.textContent = "對應程式：" + code; tr.append(c); }
+}
+
+function remember(userText, messages) {
+  if (userText) state.history.push({ role: "user", content: userText });
+  if (messages && messages.length) state.history.push({ role: "assistant", content: messages.map((m) => m.text).join("\n\n") });
+  state.history = state.history.slice(-HISTORY_LIMIT);
+}
+function setBusy(on) {
+  state.busy = on;
+  for (const el of document.querySelectorAll("#send, #msg, .sample, .menu-hit button, .chip")) el.disabled = on;
+}
+
+const STATUS = {
+  checking: ["正在確認能否使用 Claude…", "--r-paused"],
+  ready: ["AI：Claude（快速模型）", "--r-ai"],
+  off: ["AI 已關閉：使用關鍵字比對", "--r-fallback"],
+  unavailable: ["這裡無法使用 Claude：使用關鍵字比對", "--r-fallback"],
+  denied: ["未允許使用 Claude：使用關鍵字比對", "--r-fallback"],
+};
+function updateStatus() {
+  const [text, color] = STATUS[state.ai];
+  const s = $("ai-status"); s.textContent = text; s.style.setProperty("--status-color", `var(${color})`);
+  const toggle = $("toggle-ai"); toggle.disabled = !state.sample; toggle.checked = state.ai === "ready";
+}
+const NO_AI_REASON = {
+  checking: "還在確認能不能使用 Claude，這一題先用關鍵字比對。",
+  off: "AI 已關閉（等於 bot 沒有設定 API key），改用關鍵字比對；家長一樣收得到回覆，只是比較制式。",
+  unavailable: "這裡無法使用 Claude（例如直接用瀏覽器打開檔案），所以用關鍵字比對，等於 bot 沒有設定 API key 時的樣子。",
+  denied: "你沒有允許這個頁面使用 Claude，所以用關鍵字比對，等於 bot 沒有設定 API key 時的樣子。",
+};
+// 呼叫 Claude 失敗時：[說明, 之後是否都不要再呼叫, 之後的狀態]
+const SAMPLE_ERRORS = {
+  not_granted: ["你沒有允許這個頁面使用 Claude，改用關鍵字比對。", true, "denied"],
+  sampling_disabled: ["這個帳號目前不能使用 Claude，改用關鍵字比對。", true, "unavailable"],
+  not_declared: ["這裡無法使用 Claude，改用關鍵字比對。", true, "unavailable"],
+  capability_disabled: ["這裡無法使用 Claude，改用關鍵字比對。", true, "unavailable"],
+  capability_removed: ["這裡無法使用 Claude，改用關鍵字比對。", true, "unavailable"],
+  rate_limited: ["Claude 的使用量暫時到上限，這一題先用關鍵字比對，晚一點再試。", false],
+  session_expired: ["Claude 的登入已過期，請重新登入；這一題先用關鍵字比對。", false],
+  refused: ["Claude 沒有回答這一題，改用關鍵字比對。", false],
+};
+const DEFAULT_ERROR = ["Claude 這次沒有回傳可用的答案，改用關鍵字比對。正式 bot 遇到 API 錯誤或逾時也是這樣處理，家長一定收得到回覆。", false];
+
+async function handleText(text) {
+  const key = text.replace(/\s+/g, "").toLowerCase();
+  if (RESUME_WORDS.has(key)) {
+    state.paused = false; const m = [R.resume()]; addBot(m, "resume"); remember(text, m);
+    return showTrace({ route: "resume", title: "回到 AI 助理", why: "清除暫停時間，之後打字的問題又會自動回答。", code: "app/db.py → resume_bot()" });
+  }
+  if (HANDOFF_WORDS.has(key)) {
+    state.paused = true; const m = [R.handoff(PAUSE_MINUTES, contactText())]; addBot(m, "human"); remember(text, m);
+    return showTrace({ route: "human", title: `轉給櫃台老師，AI 暫停 ${PAUSE_MINUTES} 分鐘`,
+      why: "家長要求真人。bot 記下暫停時間（line_users.bot_paused_until），櫃台老師在官方帳號後台的聊天室接手。",
+      facts: [["暫停期間", "打字的訊息只記錄、不自動回覆"], ["按選單", "仍會立即回覆"], ["恢復", `點「${RESUME_WORD}」，或 ${PAUSE_MINUTES} 分鐘後自動恢復`]],
+      code: "app/bot.py → _handle_text() → db.pause_bot()" });
+  }
+  if (COMMANDS[key]) {
+    const [intent, build, code] = COMMANDS[key]; const m = [build()]; addBot(m, "fixed"); remember(text, m);
+    return showTrace({ route: "fixed", title: `固定回覆：「${text.trim()}」`,
+      why: "這是圖文選單按鈕（或快速回覆）送出的文字，bot 直接用資料庫的資料組出回覆，又快又不花 AI 費用。",
+      facts: COMMAND_FACTS[intent](), code: "app/bot.py → commands → " + code });
+  }
+  if (BINDING_WORDS.has(key) || CHILD_WORDS.has(key)) {
+    const m = [BINDING_WORDS.has(key) ? R.bindingHelp() : R.bindingNotReady()]; addBot(m, "fixed"); remember(text, m);
+    return showTrace({ route: "fixed", title: `固定回覆：「${text.trim()}」`,
+      why: "家長綁定：後台幫家長發一組 8 碼綁定碼，家長在官方帳號輸入「綁定 綁定碼」，這個 LINE 就連到後台的家長資料。",
+      facts: COMMAND_FACTS.binding(), code: "app/bot.py → decide() → replies.binding_help()" });
+  }
+  const code = BINDING_CODE.exec(normalizeQuestion(text).trim());
+  if (code) {
+    const m = [msg(`（展示）正式的 bot 收到「綁定 ${code[1].toUpperCase()}」會查資料庫的綁定碼，對了就把這個 LINE 綁定到那位家長。`)];
+    addBot(m, "fixed"); remember(text, m);
+    return showTrace({ route: "fixed", title: "綁定碼", why: "網頁版展示沒有資料庫，不會真的綁定。",
+      facts: COMMAND_FACTS.binding(), code: "app/bot.py → _redeem() → redeem_binding_code()" });
+  }
+  const article = DATA.articles.find((a) => a.title === text.trim());
+  if (article) {
+    const m = [R.kbAnswer(article)]; addBot(m, "fixed"); remember(text, m);
+    return showTrace({ route: "fixed", title: `固定回覆：常見問題「${article.title}」`,
+      why: "點了「常見問題」底下的按鈕，文字和標題完全相同，直接回這一題的標準答案。",
+      facts: [["資料", `kb_articles「${article.title}」`]], code: "app/bot.py → knowledge.article_by_title()" });
+  }
+  if (state.paused) {
+    addNote("⏸ AI 暫停中：這則訊息交給櫃台老師在後台回覆"); remember(text, null);
+    return showTrace({ route: "paused", title: "AI 暫停中，交給櫃台老師",
+      why: "家長剛剛按了「找真人客服」。bot 只把這則訊息記在 message_logs（標記需要真人），不自動回覆。",
+      facts: [["要恢復", `點「${RESUME_WORD}」`]], code: "app/bot.py → _handle_text()" });
+  }
+
+  let reason = NO_AI_REASON[state.ai];
+  if (state.ai === "ready") {
+    const epoch = state.epoch;
+    const controller = new AbortController(); state.controller = controller;
+    addTyping();
+    try {
+      const a = await askClaude(text, controller.signal);
+      if (epoch !== state.epoch) return;
+      removeTyping();
+      const m = [R.aiReply(a.reply, a.needsHuman)]; addBot(m, "ai"); remember(text, m);
+      return showTrace({ route: "ai", title: "Claude 依補習班資料回答",
+        why: "這是打字的自由提問，沒有對應的按鈕，所以把回答規則、補習班資料、今天日期和最近的對話一起交給 Claude，要求回傳固定格式（JSON）。",
+        facts: [["問題類型", `${a.intent}（${INTENT_LABELS[a.intent]}）`],
+                ["需要真人", a.needsHuman ? "是 → 附上「找真人客服」按鈕" : "否"],
+                ["用到的資料", a.used.join("、") || "—"],
+                ["送出內容", `規則＋補習班資料約 ${a.promptChars.toLocaleString("en-US")} 字，加上最近 ${a.historyCount} 則訊息`],
+                ["模型", "展示：你的 Claude（快速模型）；正式 bot：claude-haiku-5-5"],
+                ["花費時間", `${a.seconds} 秒`]],
+        code: "app/ai.py → answer()" });
+    } catch (e) {
+      if (epoch !== state.epoch || (e && e.code === "cancelled")) return;
+      removeTyping();
+      if (!(e && e.code)) console.warn(e);
+      const [copy, permanent, next] = SAMPLE_ERRORS[e && e.code] || DEFAULT_ERROR;
+      if (permanent) { state.sample = null; state.ai = next; updateStatus(); }
+      reason = copy;
+    } finally {
+      if (state.controller === controller) state.controller = null;
+    }
+  }
+  const o = offlineAnswer(text);
+  const m = [o.message]; addBot(m, "fallback"); remember(text, m);
+  showTrace({ route: "fallback", title: "關鍵字比對", why: reason,
+    facts: [["比對結果", o.match], ["需要真人", o.needsHuman ? "是 → 附上「找真人客服」按鈕" : "否"]],
+    code: "app/bot.py → _offline_answer()" });
+}
+
+async function send(text, { fromComposer = false, reveal = false } = {}) {
+  text = String(text || "").trim();
+  if (!text || state.busy) return;
+  if (reveal && narrow.matches) log.scrollIntoView({ block: "nearest", behavior: reducedMotion.matches ? "auto" : "smooth" });
+  addUser(text);
+  setBusy(true);
+  try { await handleText(text); }
+  finally { setBusy(false); if (fromComposer) $("msg").focus({ preventScroll: true }); }
+}
+
+function start() {
+  state.epoch += 1;
+  if (state.controller) { state.controller.abort(); state.controller = null; }
+  log.replaceChildren(); state.history = []; state.paused = false;
+  addNote("📥 家長加入官方帳號好友");
+  const m = [R.welcome()]; addBot(m, "fixed"); remember(null, m);
+  showTrace({ route: "fixed", title: "固定回覆：家長加入好友",
+    why: "家長加入官方帳號時，LINE 會送出「加入好友」事件。bot 存下家長的 LINE 名稱，回覆歡迎詞和快速回覆按鈕，不經過 AI。",
+    facts: [["事件", "follow"], ["寫入", "line_users、message_logs"]], code: "app/bot.py → handle_event() → replies.welcome()" });
+  setBusy(false);
+}
+
+// ---- 初始化
+$("menu-img").src = MENU_SRC;
+for (const label of MENU_LABELS) {
+  const b = document.createElement("button"); b.type = "button"; b.setAttribute("aria-label", label);
+  b.addEventListener("click", () => send(label)); $("menu-hit").append(b);
+}
+const SAMPLES = ["國二數學一週上幾次？學費多少？", "明天颱風會停課嗎？", "學費可以刷卡分期嗎？", "我想看我家小孩最近的數學成績", "補習班在哪裡？可以停車嗎？", "下課可以留下來寫作業嗎？"];
+for (const s of SAMPLES) {
+  const b = document.createElement("button"); b.type = "button"; b.className = "sample"; b.textContent = s;
+  b.addEventListener("click", () => send(s, { reveal: true })); $("samples").append(b);
+}
+$("composer").addEventListener("submit", (e) => {
+  e.preventDefault(); const v = $("msg").value; if (state.busy || !v.trim()) return;
+  $("msg").value = ""; send(v, { fromComposer: true });
+});
+$("menu-toggle").addEventListener("click", () => {
+  const menu = $("menu"); menu.hidden = !menu.hidden;
+  $("menu-toggle").setAttribute("aria-expanded", String(!menu.hidden));
+  $("menu-toggle").textContent = menu.hidden ? "點我開啟選單 ▲" : "點我開啟選單 ▼";
+});
+$("toggle-ai").addEventListener("change", (e) => { if (state.sample) { state.ai = e.target.checked ? "ready" : "off"; updateStatus(); } });
+const tomorrow = taipei(1);
+$("closure-label").textContent = `示範公告：明天（${tomorrow.m}/${tomorrow.d}）晚上颱風停課`;
+$("toggle-closure").addEventListener("change", (e) => { state.closure = e.target.checked; });
+$("reset").addEventListener("click", start);
+start();
+updateStatus();
+
+if (window.claude && typeof window.claude.use === "function") {
+  window.claude.use("sample").then((s) => {
+    state.sample = s || null;
+    state.ai = s ? "ready" : "unavailable";
+    updateStatus();
+  }).catch(() => { state.ai = "unavailable"; updateStatus(); });
+} else {
+  state.ai = "unavailable"; updateStatus();   // 直接用瀏覽器打開檔案時：只有關鍵字比對
+}
+</script>

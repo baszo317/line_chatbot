@@ -1,0 +1,1782 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>高明補習班後台</title>
+<style>
+:root {
+  --sans: "Microsoft JhengHei UI", "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", "Noto Sans CJK TC", "Heiti TC", system-ui, sans-serif;
+  --mono: Consolas, "SFMono-Regular", Menlo, monospace;
+  --paper: #f5f6f7; --card: #ffffff; --sunk: #f0f2f4; --hover: #f5f7f8;
+  --ink: #1f2328; --ink-2: #3b4148; --muted: #646b74; --faint: #949ba3;
+  --line: #e1e4e8; --line-2: #cbd0d6;
+  --accent: #1e5e4a; --accent-ink: #ffffff; --accent-weak: #e4eee9;
+  --bar: #1f3b33; --bar-ink: #c9dad3; --bar-on: #ffffff; --bar-mark: #8fd0b5;
+  --red: #b42318; --red-weak: #fcebe9; --amber: #8f5408; --amber-weak: #fbf0dc; --green: #1d7442;
+  --g6: #456aa8; --g7: #357e55; --g8: #a5611f; --g9: #973d5f; --g0: #6b7280;
+  --chat: #d9e2ec; --me: #9be15d;
+  --shadow: 0 12px 36px rgba(20, 28, 36, .22);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #14171a; --card: #1b1f23; --sunk: #171a1d; --hover: #21262b;
+    --ink: #e3e7eb; --ink-2: #c6ccd2; --muted: #98a0a8; --faint: #6f777f;
+    --line: #2b3137; --line-2: #3b434b;
+    --accent: #7cc4a8; --accent-ink: #0f1d18; --accent-weak: #1c2e27;
+    --bar: #15241e; --bar-ink: #a9c0b6; --bar-on: #ffffff; --bar-mark: #7cc4a8;
+    --red: #f08a7e; --red-weak: #3a1f1c; --amber: #e0ad62; --amber-weak: #33270f; --green: #74c99a;
+    --g6: #86a8e0; --g7: #74c39a; --g8: #e0a564; --g9: #e08daf; --g0: #9aa3ad;
+    --chat: #24303c; --me: #4f8a3a; --shadow: 0 12px 36px rgba(0, 0, 0, .55);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #14171a; --card: #1b1f23; --sunk: #171a1d; --hover: #21262b;
+  --ink: #e3e7eb; --ink-2: #c6ccd2; --muted: #98a0a8; --faint: #6f777f;
+  --line: #2b3137; --line-2: #3b434b;
+  --accent: #7cc4a8; --accent-ink: #0f1d18; --accent-weak: #1c2e27;
+  --bar: #15241e; --bar-ink: #a9c0b6; --bar-on: #ffffff; --bar-mark: #7cc4a8;
+  --red: #f08a7e; --red-weak: #3a1f1c; --amber: #e0ad62; --amber-weak: #33270f; --green: #74c99a;
+  --g6: #86a8e0; --g7: #74c39a; --g8: #e0a564; --g9: #e08daf; --g0: #9aa3ad;
+  --chat: #24303c; --me: #4f8a3a; --shadow: 0 12px 36px rgba(0, 0, 0, .55);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--paper); color: var(--ink); font: 14px/1.6 var(--sans); font-variant-numeric: tabular-nums; }
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.hidden { display: none !important; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.nowrap { white-space: nowrap; }
+.st-red { color: var(--red); }
+.st-amber { color: var(--amber); }
+.st-green { color: var(--green); }
+
+/* 上方的選單 */
+.top { background: var(--bar); color: var(--bar-ink); position: sticky; top: 0; z-index: 20; }
+.top-in { max-width: 1240px; margin: 0 auto; padding: 0 20px; display: flex; align-items: stretch; gap: 20px; height: 48px; }
+.brand { color: var(--bar-on); font-weight: 700; font-size: 16px; letter-spacing: .08em; display: flex; align-items: center; white-space: nowrap; text-decoration: none; }
+nav { display: flex; align-items: stretch; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
+nav a { display: flex; align-items: center; gap: 6px; padding: 0 11px; color: var(--bar-ink); text-decoration: none; white-space: nowrap;
+        border-top: 3px solid transparent; border-bottom: 3px solid transparent; }
+nav a:hover { color: var(--bar-on); }
+nav a[aria-current="page"] { color: var(--bar-on); border-bottom-color: var(--bar-mark); font-weight: 600; }
+nav a:focus-visible { outline-offset: -3px; outline-color: var(--bar-mark); }
+nav .count { min-width: 18px; padding: 0 5px; border-radius: 9px; background: #d64535; color: #fff; font-size: 11.5px; line-height: 18px; text-align: center; font-weight: 600; }
+.me { display: flex; align-items: center; gap: 12px; white-space: nowrap; font-size: 13px; }
+.me button { all: unset; cursor: pointer; color: var(--bar-on); }
+.me button:hover { text-decoration: underline; text-underline-offset: 3px; }
+.me button:focus-visible { outline: 2px solid var(--bar-mark); }
+main { max-width: 1240px; margin: 0 auto; padding: 22px 20px 64px; }
+.head { display: flex; align-items: center; gap: 10px 16px; flex-wrap: wrap; margin-bottom: 16px; min-height: 34px; }
+.head h1 { margin: 0; font-size: 20px; font-weight: 600; }
+.head .acts { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* 按鈕、表單 */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0 14px; border-radius: 4px;
+       border: 1px solid var(--line-2); background: var(--card); cursor: pointer; white-space: nowrap; text-decoration: none; color: var(--ink); }
+.btn:hover { background: var(--hover); border-color: var(--faint); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.12); }
+.btn.danger { color: var(--red); }
+.btn.danger:hover { border-color: var(--red); }
+.btn.link { border-color: transparent; background: none; color: var(--accent); padding: 0 4px; height: auto; }
+.btn.link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.btn.sm { height: 26px; padding: 0 10px; font-size: 13px; }
+.btn[disabled] { opacity: .5; cursor: default; filter: none; }
+input[type=text], input[type=search], input[type=tel], input[type=number], input[type=date], input[type=month], input[type=time],
+input[type=password], input[type=email], select, textarea {
+  width: 100%; min-width: 0; height: 32px; padding: 0 9px; border: 1px solid var(--line-2); border-radius: 4px; background: var(--card); }
+textarea { height: auto; padding: 7px 9px; resize: vertical; min-height: 84px; line-height: 1.6; }
+input:focus, select:focus, textarea:focus { border-color: var(--accent); outline: 2px solid color-mix(in srgb, var(--accent) 22%, transparent); outline-offset: 0; }
+.field { display: grid; gap: 4px; min-width: 0; align-content: start; }
+.field > .lab { font-size: 13px; color: var(--ink-2); display: flex; align-items: baseline; gap: 8px; }
+.field > .lab em { color: var(--red); font-style: normal; font-size: 12px; }
+.field > .lab .hint { color: var(--faint); font-size: 12px; }
+.field > .note { font-size: 12px; color: var(--muted); }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 16px; }
+.span2 { grid-column: 1 / -1; }
+.stack { display: grid; gap: 14px; }
+.check { display: inline-flex; gap: 8px; align-items: center; cursor: pointer; }
+.check input { width: 16px; height: 16px; accent-color: var(--accent); margin: 0; }
+.seg { display: inline-flex; flex-wrap: wrap; }
+.seg button { cursor: pointer; height: 30px; padding: 0 12px; border: 1px solid var(--line-2); background: var(--card); margin: 0 0 0 -1px; }
+.seg button:first-child { margin-left: 0; border-radius: 4px 0 0 4px; }
+.seg button:last-child { border-radius: 0 4px 4px 0; }
+.seg button:hover { background: var(--hover); }
+.seg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); position: relative; }
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.toolbar input[type=search] { flex: 1 1 220px; max-width: 320px; }
+.tabs { display: flex; border-bottom: 1px solid var(--line); margin-bottom: 12px; overflow-x: auto; }
+.tabs button { cursor: pointer; border: 0; background: none; padding: 7px 12px; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.tabs button:hover { color: var(--ink); }
+.tabs button[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+.tabs button span { color: var(--faint); margin-left: 4px; font-weight: 400; }
+
+/* 表格、區塊 */
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: 4px; }
+.panel.pad { padding: 14px 16px; }
+.block + .block, .panel + .block, .block + .panel { margin-top: 24px; }
+h2.sec { font-size: 15px; font-weight: 600; margin: 0 0 8px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+h2.sec .muted { font-weight: 400; font-size: 13px; }
+h2.sec .btn { margin-left: auto; }
+table { border-collapse: collapse; width: 100%; }
+th { text-align: left; font-weight: 400; color: var(--muted); font-size: 12.5px; padding: 7px 12px; background: var(--sunk); border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tbody tr:last-child td { border-bottom: 0; }
+tr.click { cursor: pointer; }
+tr.click:hover td { background: var(--hover); }
+tr.click:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+tr.dim td { color: var(--faint); }
+td .sub { display: block; color: var(--muted); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 52ch; }
+td.right, th.right { text-align: right; }
+.table-wrap { overflow-x: auto; }
+.empty { padding: 28px 16px; text-align: center; color: var(--muted); }
+.empty b { display: block; color: var(--ink); font-weight: 600; margin-bottom: 2px; }
+.tag { display: inline-block; font-size: 12px; line-height: 18px; padding: 0 6px; border-radius: 3px; border: 1px solid var(--line-2); color: var(--ink-2); white-space: nowrap; vertical-align: 1px; }
+.tag.red { color: var(--red); border-color: color-mix(in srgb, var(--red) 45%, transparent); }
+.tag.amber { color: var(--amber); border-color: color-mix(in srgb, var(--amber) 45%, transparent); }
+.tag.green { color: var(--green); border-color: color-mix(in srgb, var(--green) 45%, transparent); }
+.tag.g6 { color: var(--g6); border-color: color-mix(in srgb, var(--g6) 45%, transparent); }
+.tag.g7 { color: var(--g7); border-color: color-mix(in srgb, var(--g7) 45%, transparent); }
+.tag.g8 { color: var(--g8); border-color: color-mix(in srgb, var(--g8) 45%, transparent); }
+.tag.g9 { color: var(--g9); border-color: color-mix(in srgb, var(--g9) 45%, transparent); }
+.tags { display: inline-flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+.alert { display: flex; gap: 12px; align-items: center; padding: 9px 14px; background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--line-2); border-radius: 4px; }
+.alert + .alert { margin-top: 6px; }
+.alert.error { border-left-color: var(--red); }
+.alert.warn { border-left-color: var(--amber); }
+.alert .body { flex: 1; min-width: 0; }
+.alert .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+dl.kv { display: grid; grid-template-columns: max-content 1fr; gap: 6px 20px; margin: 0; }
+dl.kv dt { color: var(--muted); }
+dl.kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.problem { color: var(--red); font-size: 13px; }
+
+/* 右側編輯面板、對話框 */
+.scrim { position: fixed; inset: 0; background: rgba(16, 22, 28, .4); z-index: 30; }
+.sheet { position: fixed; top: 0; right: 0; bottom: 0; width: min(980px, 100vw); background: var(--paper); z-index: 31; display: flex; flex-direction: column; box-shadow: var(--shadow); }
+.sheet.narrow { width: min(660px, 100vw); }
+.sheet-head { display: flex; align-items: center; gap: 12px; padding: 10px 20px; background: var(--card); border-bottom: 1px solid var(--line); }
+.sheet-head h2 { margin: 0 auto 0 0; font-size: 17px; font-weight: 600; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sheet-body { flex: 1; overflow-y: auto; padding: 18px 20px 28px; }
+.sheet-foot { display: flex; gap: 8px; align-items: center; padding: 10px 20px; background: var(--card); border-top: 1px solid var(--line); flex-wrap: wrap; }
+.sheet-foot .spacer { flex: 1; }
+.x { all: unset; cursor: pointer; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 4px; color: var(--muted); font-size: 22px; line-height: 1; }
+.x:hover { background: var(--hover); color: var(--ink); }
+.x:focus-visible { outline: 2px solid var(--accent); }
+.editor { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start; }
+.editor > .side-preview { position: sticky; top: 0; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 4px; padding: 14px 16px; }
+.card + .card { margin-top: 14px; }
+.card > h3 { margin: 0 0 10px; font-size: 14px; font-weight: 600; display: flex; align-items: baseline; gap: 8px; }
+.card > h3 .muted { font-weight: 400; font-size: 12.5px; }
+.helper { border: 1px dashed var(--line-2); border-radius: 4px; padding: 12px 14px; background: var(--sunk); }
+.helper > .lab { font-size: 13px; color: var(--ink-2); margin-bottom: 8px; }
+.drop { border: 1px dashed var(--line-2); border-radius: 4px; padding: 10px; display: flex; gap: 12px; align-items: center; background: var(--card); }
+.drop.over { border-color: var(--accent); background: var(--accent-weak); }
+.drop img { width: 84px; height: 84px; object-fit: cover; border-radius: 3px; border: 1px solid var(--line); }
+.drop .txt { flex: 1; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.dialog { position: fixed; z-index: 41; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(440px, calc(100vw - 32px)); max-height: calc(100vh - 32px);
+          overflow-y: auto; background: var(--card); border-radius: 6px; padding: 18px 20px; box-shadow: var(--shadow); display: grid; gap: 12px; }
+.dialog.wide { width: min(640px, calc(100vw - 32px)); }
+.dialog h2 { margin: 0; font-size: 16px; font-weight: 600; }
+.dialog p { margin: 0; }
+.dialog .acts { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.dialog-scrim { position: fixed; inset: 0; z-index: 40; background: rgba(16, 22, 28, .45); }
+.choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.choices .btn { height: 44px; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 60; background: #1f2328; color: #fff;
+         padding: 9px 16px; border-radius: 4px; box-shadow: var(--shadow); max-width: calc(100vw - 32px); }
+.toast.red { background: var(--red); }
+
+/* LINE 預覽 */
+.lp { width: 300px; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--card); }
+.lp .bar { padding: 6px 12px; font-size: 12.5px; color: var(--muted); border-bottom: 1px solid var(--line); }
+.lp .chat { background: var(--chat); padding: 12px 10px; display: flex; flex-direction: column; gap: 6px; min-height: 240px; max-height: 520px; overflow-y: auto; }
+.lp.tall .chat { height: min(560px, calc(100vh - 250px)); max-height: none; }
+.lp .input { display: flex; gap: 6px; padding: 8px; border-top: 1px solid var(--line); }
+.b { max-width: 88%; padding: 7px 11px; border-radius: 14px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; line-height: 1.5;
+     background: #fff; color: #111; align-self: flex-start; }
+.b.me { background: var(--me); color: #111; align-self: flex-end; }
+.b.pic { padding: 3px; }
+.b.pic img { display: block; max-width: 180px; max-height: 240px; border-radius: 11px; }
+.b.pic .noimg { width: 160px; height: 100px; display: grid; place-items: center; color: #777; font-size: 12px; }
+.qr { display: flex; gap: 5px; flex-wrap: wrap; padding: 2px 0 4px; }
+.qr button, .qr span { all: unset; cursor: pointer; background: #fff; color: #1d6fd8; border: 1px solid #c8d7ee; border-radius: 999px; padding: 1px 10px; font-size: 12.5px; }
+.qr span { cursor: default; }
+.sys-note { align-self: center; color: var(--muted); font-size: 12px; text-align: center; padding: 2px 8px; }
+.route { align-self: flex-start; font-size: 11.5px; color: var(--muted); margin: -3px 0 2px 4px; }
+.samples { display: flex; gap: 6px; flex-wrap: wrap; }
+.testgrid { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 24px; align-items: start; }
+pre.kb { white-space: pre-wrap; font: 12.5px/1.6 var(--sans); background: var(--sunk); border-radius: 4px; padding: 12px; max-height: 460px; overflow: auto; margin: 10px 0 0; }
+
+/* 週課表 */
+.board-wrap { overflow-x: auto; }
+.board { display: grid; grid-template-columns: 52px repeat(7, minmax(110px, 1fr)); min-width: 860px; }
+.board .dh { text-align: center; padding: 8px 0; font-size: 13px; border-bottom: 1px solid var(--line-2); background: var(--sunk); }
+.board .dh.we { color: var(--muted); }
+.board .times { position: relative; border-right: 1px solid var(--line); }
+.board .times span { position: absolute; right: 7px; font-size: 11.5px; color: var(--faint); transform: translateY(-50%); }
+.board .day { position: relative; border-right: 1px solid var(--line); }
+.board .day:last-child { border-right: 0; }
+.lesson { position: absolute; border: 0; border-radius: 3px; padding: 3px 6px; overflow: hidden; cursor: pointer; font-size: 12px; line-height: 1.35; color: #fff; text-align: left; }
+.lesson b { display: block; font-size: 12.5px; font-weight: 600; }
+.lesson:hover { filter: brightness(1.1); }
+.lesson.g6 { background: var(--g6); } .lesson.g7 { background: var(--g7); } .lesson.g8 { background: var(--g8); }
+.lesson.g9 { background: var(--g9); } .lesson.g0 { background: var(--g0); }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; padding: 8px 12px; font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
+.slot { display: grid; grid-template-columns: 110px 1fr 1fr 1fr auto; gap: 8px; align-items: center; margin-bottom: 8px; }
+
+/* 學生、家長、LINE */
+.person { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); }
+.person:first-of-type { border-top: 0; padding-top: 2px; }
+.person .who { display: grid; gap: 3px; }
+.line-state { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+.code { font-family: var(--mono); letter-spacing: .12em; }
+.bigcode { font-family: var(--mono); font-size: 36px; letter-spacing: .2em; font-weight: 700; text-align: center; padding: 12px; border-radius: 4px; background: var(--sunk); }
+.results { border: 1px solid var(--line); border-radius: 4px; margin-top: 8px; max-height: 280px; overflow: auto; background: var(--card); }
+.results .row { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-top: 1px solid var(--line); }
+.results .row:first-child { border-top: 0; }
+.results .row .main { flex: 1; min-width: 0; }
+.results .row.picked { background: var(--accent-weak); }
+.edit-honors td { padding: 5px 6px; }
+.pick-bar { display: flex; gap: 8px; }
+.picks { border: 1px solid var(--line); border-radius: 4px; overflow-y: auto; min-height: 120px; max-height: min(400px, calc(100vh - 320px)); }
+.pick { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; }
+.pick + .pick { border-top: 1px solid var(--line); }
+.pick.picked { background: var(--accent-weak); }
+.pick .main { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.pick .title { font-weight: 600; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.pick .said { font-size: 12.5px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pick.dim .title, .pick.dim .said, .pick.dim .avatar { opacity: .55; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; flex: none; object-fit: cover; background: var(--sunk); color: var(--muted); display: grid; place-items: center; font-weight: 600; }
+.msg-reply summary { cursor: pointer; color: var(--muted); font-size: 12.5px; }
+.msg-reply pre { white-space: pre-wrap; font: inherit; font-size: 13px; margin: 6px 0 0; padding: 8px 10px; border-radius: 4px; background: var(--sunk); }
+
+/* 登入 */
+.login { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
+.login form { width: min(340px, 100%); background: var(--card); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.login .band { background: var(--bar); color: var(--bar-on); padding: 16px 22px; font-size: 18px; font-weight: 700; letter-spacing: .08em; }
+.login .band span { font-weight: 400; font-size: 13px; color: var(--bar-ink); margin-left: 8px; letter-spacing: 0; }
+.login .fields { padding: 20px 22px 22px; display: grid; gap: 14px; }
+.err { color: var(--red); font-size: 13px; min-height: 1.3em; }
+
+@media (max-width: 960px) {
+  .editor, .testgrid { grid-template-columns: minmax(0, 1fr); }
+  .editor > .side-preview { position: static; }
+  .grid2, .grid3 { grid-template-columns: minmax(0, 1fr); }
+  .choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+  .top-in { padding: 0 12px; gap: 12px; }
+  .brand { display: none; }
+  main { padding: 16px 12px 56px; }
+  .slot { grid-template-columns: 1fr 1fr; }
+  .table-wrap > table { min-width: 600px; }
+  .sheet-head, .sheet-body, .sheet-foot { padding-left: 14px; padding-right: 14px; }
+  .lp { width: 100%; }
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+"use strict";
+// ======================================================================= 小工具
+const SCHOOL = "高明補習班";
+const WEEKDAYS = ["", "週一", "週二", "週三", "週四", "週五", "週六", "週日"];
+const WEEK1 = "一二三四五六日";
+const GRADES = [[6, "國小"], [7, "國一"], [8, "國二"], [9, "國三"]];
+const GRADE_LABEL = Object.fromEntries(GRADES);
+const STUDENT_STATUS = { active: "在學", paused: "暫停", left: "離班" };
+const ENROLL_STATUS = { trial: "試聽", active: "在班", dropped: "退班", finished: "結業" };
+const COURSE_STATUS = { open: "開放中", closed: "已結束", archived: "封存" };
+const RELATIONS = ["母", "父", "祖父母", "其他"];
+const NOTICE_TYPES = { closure: "停課", exam: "考試", event: "活動", enrollment: "招生", general: "一般公告", calendar: "行事曆" };
+const FAQ_TYPES = { contact: "聯絡", traffic: "交通", course: "課程", fee: "收費", policy: "規定", enrollment: "招生", other: "其他" };
+const MAIN_MENU = ["課程介紹", "行事曆", "榜單", "交通資訊", "聯絡我們", "常見問題"];
+const state = { me: null, page: "home", status: null, subjects: [], courses: [] };
+
+function h(tag, props, ...children) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else if (k === "value") el.value = v;
+    else if (k === "checked") el.checked = !!v;
+    else if (k === "style") el.style.cssText = v;
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of children.flat(Infinity)) {
+    if (c == null || c === false) continue;
+    el.append(c instanceof Node ? c : document.createTextNode(String(c)));
+  }
+  return el;
+}
+const $ = (sel, root = document) => root.querySelector(sel);
+const put = (parent, ...kids) => parent.append(...kids.flat().filter((k) => k != null && k !== false));   // append，但略過 null
+const fill = (parent, ...kids) => parent.replaceChildren(...kids.flat().filter((k) => k != null && k !== false));   // 換掉內容，略過 null
+const fmtDate = (d) => (d ? String(d).slice(0, 10).replaceAll("-", "/") : "");
+const fmtMD = (d) => { if (!d) return ""; const [, m, dd] = String(d).slice(0, 10).split("-").map(Number); return `${m}/${dd}`; };
+const fmtTime = (t) => (t ? String(t).slice(0, 5) : "");
+const fmtMoney = (n) => (n == null ? "" : Number(n).toLocaleString("en-US") + " 元");
+const fmtStamp = (s) => { if (!s) return ""; const d = new Date(s); return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; };
+const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+const daysLeft = (iso) => Math.round((new Date(iso + "T00:00:00") - new Date(todayISO() + "T00:00:00")) / 86400000);
+function weekday(iso) { const d = new Date(iso + "T00:00:00"); return WEEK1[(d.getDay() + 6) % 7]; }
+const dayBody = (iso) => (iso ? `${fmtMD(iso)}（${weekday(iso)}）` : "");                      // 10/19（日）
+const dayTitle = (iso) => { if (!iso) return ""; const [, m, d] = iso.split("-").map(Number); return `${m}月${d}日（${weekday(iso)}）`; };
+const gradeTag = (g, label) => h("span", { class: "tag" + (g >= 6 && g <= 9 ? " g" + g : "") }, label || GRADE_LABEL[g] || "不分年級");
+function gradesText(grades) {
+  const g = [...new Set(grades || [])].sort((a, b) => a - b);
+  if (!g.length || g.join() === "6,7,8,9") return "";
+  if (g.join() === "7,8,9") return "國中";
+  return g.map((x) => GRADE_LABEL[x]).join("、");
+}
+const minutes = (t) => { const [hh, mm] = String(t).split(":").map(Number); return hh * 60 + mm; };
+function scheduleText(slots) {
+  const spans = new Map();
+  for (const s of slots) {
+    const span = `${fmtTime(s.start_time)}–${fmtTime(s.end_time)}`;
+    if (!spans.has(span)) spans.set(span, []);
+    spans.get(span).push(WEEKDAYS[s.weekday]);
+  }
+  return [...spans].map(([span, days]) => `${days.join("、")} ${span}`).join("；") || "沒有上課時段";
+}
+const valueOrNull = (el) => (el.value.trim() === "" ? null : el.value.trim());
+function localGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
+function localSet(k, v) { try { localStorage.setItem(k, v); } catch { /* 私密瀏覽 */ } }
+const newId = () => (crypto.randomUUID ? crypto.randomUUID()
+  : "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) => (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)));
+
+let toastTimer;
+function toast(message, kind = "") {
+  document.querySelector(".toast")?.remove();
+  const t = h("div", { class: "toast " + kind, role: "status" }, message);
+  document.body.append(t);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.remove(), kind === "red" ? 6500 : 2600);
+}
+function errorMessage(data, status) {
+  const d = data && data.detail;
+  if (typeof d === "string") return d;
+  if (Array.isArray(d) && d.length) {
+    const e = d[0], f = (e.loc || []).slice(-1)[0];
+    if (f === "grade" || f === "grades") return "年級只能是國小或國一～國三";
+    if (["start_time", "end_time"].includes(f)) return String(e.msg || "").includes("晚於") ? "下課時間要晚於上課時間" : "時間格式不對";
+    if (["start_date", "end_date", "joined_on", "left_on", "ends_on"].includes(f)) return "日期格式不對";
+    if (f === "fee") return "學費要是 0 以上的數字";
+    if (f === "school_year") return "學年度請填數字，例如 115";
+    if (f === "body") return "內容太長了";
+    return String(e.msg || "資料格式不對").replace(/^Value error, /, "");
+  }
+  if (status === 413) return "檔案太大了";
+  return `發生錯誤（${status}）`;
+}
+async function api(path, { method = "GET", body } = {}) {
+  const res = await fetch("/admin/api" + path, {
+    method, credentials: "same-origin",
+    headers: body !== undefined ? { "Content-Type": "application/json" } : {},
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  let data = null;
+  try { data = await res.json(); } catch { /* 沒有內容 */ }
+  if (res.status === 401 && path !== "/login") { showLogin(); throw new Error("請先登入"); }
+  if (!res.ok) throw new Error(errorMessage(data, res.status));
+  return data;
+}
+async function attempt(fn, okMessage) {
+  try {
+    const r = await fn();
+    if (okMessage) toast(okMessage);
+    return r;
+  } catch (e) {
+    if (e.message !== "請先登入") toast(e.message, "red");
+    throw e;
+  }
+}
+function busy(button, fn) {
+  return async (...args) => {
+    if (button.disabled) return;
+    button.disabled = true;
+    try { return await fn(...args); } catch (e) { console.warn(e); } finally { button.disabled = false; }
+  };
+}
+
+// ---- 表單元件
+function field(label, input, { required = false, span = false, hint, note } = {}) {
+  const tag = ["INPUT", "SELECT", "TEXTAREA"].includes(input.tagName) ? "label" : "div";
+  return h(tag, { class: "field" + (span ? " span2" : "") },
+    h("span", { class: "lab" }, label, required ? h("em", {}, "必填") : null, hint ? h("span", { class: "hint" }, hint) : null),
+    input, note ? h("span", { class: "note" }, note) : null);
+}
+function seg(options, value, onChange, label) {
+  const wrap = h("div", { class: "seg", role: "group", "aria-label": label });
+  const buttons = options.map(([v, text]) => h("button", { type: "button", "aria-pressed": String(v === value), onclick: () => {
+    buttons.forEach((b, i) => b.setAttribute("aria-pressed", String(options[i][0] === v)));
+    onChange(v);
+  } }, text));
+  wrap.append(...buttons);
+  return wrap;
+}
+function gradePicker(initial, onChange) {
+  // 全部年級（空的）或任選幾個年級
+  let picked = new Set(initial || []);
+  if (picked.size === 4) picked = new Set();
+  const wrap = h("div", { class: "seg", role: "group", "aria-label": "適用年級" });
+  const all = h("button", { type: "button" }, "全部");
+  const buttons = GRADES.map(([g, l]) => h("button", { type: "button", "data-g": g }, l));
+  const paint = () => {
+    all.setAttribute("aria-pressed", String(picked.size === 0));
+    buttons.forEach((b) => b.setAttribute("aria-pressed", String(picked.has(Number(b.dataset.g)))));
+  };
+  all.addEventListener("click", () => { picked = new Set(); paint(); onChange([]); });
+  buttons.forEach((b) => b.addEventListener("click", () => {
+    const g = Number(b.dataset.g);
+    picked.has(g) ? picked.delete(g) : picked.add(g);
+    if (picked.size === 4) picked = new Set();
+    paint(); onChange([...picked].sort());
+  }));
+  wrap.append(all, ...buttons);
+  paint();
+  return wrap;
+}
+function select(options, value, attrs = {}) {
+  return h("select", attrs, options.map(([v, text]) => h("option", { value: v, selected: String(v) === String(value ?? "") }, text)));
+}
+function table(headers, rows, emptyText) {
+  return h("div", { class: "panel" }, h("div", { class: "table-wrap" }, h("table", {},
+    h("thead", {}, h("tr", {}, headers.map((t) => (t instanceof Node ? t : h("th", {}, t))))),
+    h("tbody", {}, rows.length ? rows : h("tr", {}, h("td", { colspan: headers.length, class: "empty" }, emptyText))))));
+}
+function clickRow(onOpen, ...cells) {
+  return h("tr", { class: "click", tabindex: "0", onclick: onOpen, onkeydown: (e) => { if (e.key === "Enter") onOpen(); } }, cells);
+}
+
+// ---- 右側編輯面板、對話框
+let sheetOnClose = null;
+function openSheet(title, build, { narrow = false, onClose } = {}) {
+  closeSheet(false);
+  const body = h("div", { class: "sheet-body" });
+  const foot = h("div", { class: "sheet-foot hidden" });
+  const titleEl = h("h2", { id: "sheet-title" }, title);
+  const sheet = h("aside", { class: "sheet" + (narrow ? " narrow" : ""), role: "dialog", "aria-modal": "true", "aria-labelledby": "sheet-title" },
+    h("div", { class: "sheet-head" }, titleEl, h("button", { class: "x", "aria-label": "關閉", onclick: () => closeSheet() }, "×")),
+    body, foot);
+  document.body.append(h("div", { class: "scrim", onclick: () => closeSheet() }), sheet);
+  sheetOnClose = onClose || null;
+  build(body, foot, titleEl);
+  if (foot.children.length) foot.classList.remove("hidden");
+  setTimeout(() => (sheet.querySelector("input:not([type=checkbox]):not([type=file]), textarea, select") || sheet.querySelector(".x")).focus?.(), 40);
+}
+function closeSheet(callback = true) {
+  document.querySelectorAll(".scrim, .sheet").forEach((e) => e.remove());
+  const cb = sheetOnClose; sheetOnClose = null;
+  if (callback && cb) cb();
+}
+function openDialog(title, build, { wide = false } = {}) {
+  closeDialog();
+  const box = h("div", { class: "dialog" + (wide ? " wide" : ""), role: "dialog", "aria-modal": "true", "aria-label": title }, h("h2", {}, title));
+  document.body.append(h("div", { class: "dialog-scrim", onclick: closeDialog }), box);
+  build(box);
+  setTimeout(() => (box.querySelector("input:not([type=checkbox]), textarea") || box.querySelector("button"))?.focus(), 30);
+}
+function closeDialog() { document.querySelectorAll(".dialog, .dialog-scrim").forEach((e) => e.remove()); }
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  if (document.querySelector(".dialog")) closeDialog();
+  else if (document.querySelector(".sheet")) closeSheet();
+});
+
+// ---- LINE 預覽：家長在 LINE 上看到的樣子
+function preview(items, { title = "LINE 預覽", tall = false } = {}) {
+  const chat = h("div", { class: "chat", "aria-live": "polite" });
+  const el = h("div", { class: "lp" + (tall ? " tall" : "") }, h("div", { class: "bar" }, title), chat);
+  const render = (list) => {
+    chat.replaceChildren();
+    for (const it of list) chat.append(bubble(it));
+    chat.scrollTop = chat.scrollHeight;
+  };
+  render(items || []);
+  return { el, chat, render };
+}
+function bubble(it) {
+  if (it.kind === "me") return h("div", { class: "b me" }, it.text);
+  if (it.kind === "note") return h("div", { class: "sys-note" }, it.text);
+  if (it.kind === "route") return h("div", { class: "route" }, it.text);
+  if (it.kind === "image") return h("div", { class: "b pic" }, it.src ? h("img", { src: it.src, alt: "附圖" }) : h("div", { class: "noimg" }, "（圖片）"));
+  if (it.kind === "quick") return h("div", { class: "qr" }, it.items.map((q) => it.onClick ? h("button", { type: "button", onclick: () => it.onClick(q) }, q) : h("span", {}, q)));
+  return h("div", { class: "b" }, it.text);
+}
+
+// ======================================================================= 登入與外框
+function showLogin() {
+  closeSheet(false); closeDialog();
+  const name = h("input", { type: "text", autocomplete: "username", required: true, value: localGet("admin-name") || "" });
+  const pw = h("input", { type: "password", autocomplete: "current-password", required: true });
+  const err = h("div", { class: "err", role: "alert" });
+  const submit = h("button", { class: "btn primary", type: "submit" }, "登入");
+  const form = h("form", { onsubmit: async (e) => {
+    e.preventDefault(); err.textContent = ""; submit.disabled = true;
+    try {
+      state.me = await api("/login", { method: "POST", body: { name: name.value.trim(), password: pw.value } });
+      localSet("admin-name", state.me.name);
+      renderShell();
+    } catch (ex) { err.textContent = ex.message; } finally { submit.disabled = false; }
+  } },
+    h("div", { class: "band" }, SCHOOL, h("span", {}, "後台")),
+    h("div", { class: "fields" }, field("姓名", name), field("密碼", pw), err, submit));
+  $("#root").replaceChildren(h("div", { class: "login" }, form));
+  (name.value ? pw : name).focus();
+}
+
+const PAGES = {
+  home: "首頁", notices: "公告", faq: "常見問題", students: "學生", courses: "班級", honors: "榜單",
+  broadcast: "廣播", messages: "對話紀錄", test: "機器人測試", settings: "設定",
+};
+function renderShell() {
+  const nav = h("nav", { "aria-label": "主選單" }, Object.entries(PAGES).map(([key, label]) =>
+    h("a", { href: "#" + key, "data-page": key }, label, key === "messages" ? h("span", { class: "count hidden", id: "human-count" }) : null)));
+  $("#root").replaceChildren(
+    h("header", { class: "top" }, h("div", { class: "top-in" },
+      h("a", { class: "brand", href: "#home" }, SCHOOL), nav,
+      h("div", { class: "me" }, h("span", {}, state.me.name),
+        h("button", { type: "button", onclick: async () => { await api("/logout", { method: "POST" }); showLogin(); } }, "登出")))),
+    h("main", { id: "main", tabindex: "-1" }));
+  go((location.hash || "#home").slice(1));
+  refreshStatus();
+}
+async function refreshStatus() {
+  try {
+    state.status = await api("/status");
+    const n = state.status.counts?.needs_human || 0;
+    const badge = $("#human-count");
+    if (badge) { badge.textContent = n; badge.classList.toggle("hidden", !n); badge.title = `最近 3 天有 ${n} 則需要真人回覆`; }
+  } catch { /* 首頁會顯示錯誤 */ }
+  return state.status;
+}
+const RENDER = {};
+function go(page) {
+  if (!PAGES[page]) page = "home";
+  state.page = page;
+  if (location.hash !== "#" + page) history.replaceState(null, "", "#" + page);
+  document.querySelectorAll("nav a").forEach((a) => a.dataset.page === page ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
+  closeSheet(false);
+  // 每次換頁都畫在新的容器裡：上一頁還沒載入完的話，它會畫在已經拿掉的容器上，不會蓋掉這一頁
+  const view = h("div", { class: "view" }, h("p", { class: "muted" }, "載入中…"));
+  state.view = view;
+  $("#main").replaceChildren(view);
+  RENDER[page](view).catch((e) => view.replaceChildren(h("div", { class: "alert error" }, h("div", { class: "body" }, "載入失敗：" + e.message))));
+}
+window.addEventListener("hashchange", () => state.me && go(location.hash.slice(1)));
+function pageHead(title, ...actions) {
+  return h("header", { class: "head" }, h("h1", {}, title), actions.length ? h("div", { class: "acts" }, actions) : null);
+}
+const reload = () => go(state.page);
+const later = (page, fn) => () => { go(page); setTimeout(fn, 80); };
+
+// ======================================================================= 首頁
+RENDER.home = async (main) => {
+  const s = await refreshStatus();
+  const c = s.counts || {};
+  const todo = (s.warnings || []).filter((w) => w.level !== "info");
+  if (c.needs_human) todo.unshift({ level: "warn", text: `最近 3 天有 ${c.needs_human} 則家長訊息需要真人回覆`, page: "messages" });
+  const counts = [
+    ["公告", `${c.notices ?? 0} 則`, "notices"], ["行事曆", `${c.calendars ?? 0} 份`, "notices"], ["常見問題", `${c.kb ?? 0} 題`, "faq"],
+    ["開放中的班級", `${c.courses ?? 0} 班`, "courses"], ["榜單", `${c.honors ?? 0} 筆`, "honors"],
+    ["綁定 LINE 的家長", `${c.bound ?? 0} / ${c.guardians ?? 0} 位`, "students"], ["最近 7 天的家長訊息", `${c.messages_7d ?? 0} 則`, "messages"],
+  ];
+  const ai = s.ai || {};
+  const content = s.content || {};
+  fill(main,
+    pageHead("首頁",
+      h("button", { class: "btn", onclick: later("notices", () => pickNoticeType()) }, "新增公告"),
+      h("button", { class: "btn", onclick: later("students", () => newStudent({})) }, "新增學生"),
+      h("a", { class: "btn", href: "#broadcast" }, "廣播")),
+    todo.length ? h("section", { class: "block" }, h("h2", { class: "sec" }, "待處理"),
+      todo.map((w) => h("div", { class: "alert " + w.level }, h("div", { class: "body" }, w.text),
+        h("div", { class: "acts" },
+          w.page ? h("a", { class: "btn sm", href: "#" + w.page }, "查看") : null,
+          w.action === "remove_demo" ? h("button", { class: "btn sm", onclick: removeDemo }, "移除示範班級") : null,
+          w.action === "delete_outside" ? h("button", { class: "btn sm danger", onclick: () => deleteOutside(w.table, w.id, w.text) }, "刪除") : null,
+          w.course_id ? h("button", { class: "btn sm", onclick: () => openCourse(w.course_id) }, "修改") : null)))) : null,
+    h("section", { class: "block" }, h("h2", { class: "sec" }, "目前的資料"),
+      table(["項目", h("th", { class: "right" }, "數量")], counts.map(([label, n, page]) => clickRow(() => go(page),
+        h("td", {}, label), h("td", { class: "right nowrap" }, n))), "")),
+    h("section", { class: "block" }, h("h2", { class: "sec" }, "系統"),
+      h("div", { class: "panel pad" }, h("dl", { class: "kv" },
+        h("dt", {}, "資料庫"), h("dd", {}, s.db?.ok ? (s.db.schema_ok ? "正常" : h("span", { class: "st-red" }, "需要升級，重新啟動 bot 會自動升級")) : h("span", { class: "st-red" }, "連不上：" + (s.db?.error || ""))),
+        h("dt", {}, "回答方式"), h("dd", {}, ai.mode === "claude" ? `AI（${ai.model}）` : "關鍵字比對（沒有設定 ANTHROPIC_API_KEY）"),
+        h("dt", {}, "傳圖片用的網址"), h("dd", {}, s.public_base || h("span", { class: "st-amber" }, "還不知道（LINE 傳一則訊息進來之後就會知道）")),
+        h("dt", {}, "補習班資料夾"), h("dd", {}, content.dir ? (content.report ? `${fmtStamp(content.report.synced_at)} 同步` : "等待同步") : "已關閉")))));
+};
+async function removeDemo() {
+  if (!confirm("移除所有說明寫著「（示範）」的班級？還沒有學生的會刪除，已經有學生的會改成封存。")) return;
+  const r = await attempt(() => api("/courses/remove-demo", { method: "POST" }));
+  toast(`已刪除 ${r.removed.length} 個、封存 ${r.archived.length} 個示範班級`);
+  reload();
+}
+async function deleteOutside(table, id, text) {
+  if (!confirm(`刪除這筆資料？\n${text || ""}`)) return;
+  await attempt(() => api("/content/outside/delete", { method: "POST", body: { table, id } }), "已刪除");
+  refreshStatus(); reload();
+}
+
+// ======================================================================= 公告與行事曆
+const noticeFilter = { tab: "live" };
+let contentCache = null;
+async function loadContent() { contentCache = await api("/content"); return contentCache; }
+function folderOff(main) {
+  main.append(h("div", { class: "alert warn" }, h("div", { class: "body" }, "「補習班資料」資料夾同步已關閉（.env 的 BOT_CONTENT_DIR=off），這裡不能修改。")));
+}
+RENDER.notices = async (main) => {
+  const data = await loadContent();
+  const items = data.notices;
+  const groups = {
+    live: ["顯示中", (n) => n.status === "live"],
+    closure: ["停課", (n) => n.status === "live" && n.category === "closure"],
+    exam: ["考試", (n) => n.status === "live" && n.category === "exam"],
+    event: ["活動", (n) => n.status === "live" && n.category === "event"],
+    enrollment: ["招生", (n) => n.status === "live" && n.category === "enrollment"],
+    calendar: ["行事曆", (n) => n.category === "calendar" && n.status !== "problem"],
+    off: ["已下架", (n) => n.status !== "live"],
+  };
+  const list = h("div");
+  const tabs = h("div", { class: "tabs", role: "group", "aria-label": "篩選" });
+  const paint = () => {
+    tabs.replaceChildren(...Object.entries(groups).map(([k, [label, fn]]) => h("button", { type: "button", "aria-pressed": String(noticeFilter.tab === k),
+      onclick: () => { noticeFilter.tab = k; paint(); } }, label, h("span", {}, items.filter(fn).length))));
+    const shown = items.filter(groups[noticeFilter.tab][1]);
+    list.replaceChildren(table(["標題", "類型", "年級", "顯示到", "狀態"], shown.map(noticeRow), "沒有資料"));
+  };
+  main.replaceChildren(pageHead("公告與行事曆", data.enabled ? h("button", { class: "btn primary", onclick: () => pickNoticeType() }, "新增") : null));
+  if (!data.enabled) folderOff(main);
+  const outside = data.outside.filter((o) => o.table === "announcements");
+  if (outside.length) {
+    main.append(h("section", { class: "block" }, h("h2", { class: "sec" }, "不在資料夾裡的公告", h("span", { class: "muted" }, "家長也看得到")),
+      outside.map((o) => h("div", { class: "alert" + (o.demo ? " error" : "") },
+        h("div", { class: "body" }, o.title, o.demo ? h("span", { class: "tag red", style: "margin-left:8px" }, "示範") : null),
+        h("div", { class: "acts" },
+          data.enabled ? h("button", { class: "btn sm", onclick: () => editNotice({ ...o, key: null, outside_id: o.id, image: null }, o.category) }, "移到資料夾") : null,
+          h("button", { class: "btn sm danger", onclick: () => deleteOutside(o.table, o.id, o.title) }, "刪除"))))),
+      h("div", { style: "height:20px" }));
+  }
+  main.append(tabs, list);
+  paint();
+};
+function noticeRow(n) {
+  const left = n.ends_on ? daysLeft(n.ends_on) : null;
+  const status = n.draft ? h("span", { class: "st-amber" }, "AI 草稿待確認")
+    : { live: left === 0 ? h("span", { class: "st-amber" }, "今天最後一天") : "",
+        expired: "已過期", old: "舊的，沒有用到", problem: h("span", { class: "st-red" }, "有問題") }[n.status];
+  return h("tr", { class: "click" + (n.status === "live" ? "" : " dim"), tabindex: "0",
+                   onclick: () => editNotice(n, n.category), onkeydown: (e) => { if (e.key === "Enter") editNotice(n, n.category); } },
+    h("td", {}, n.title, n.image ? h("span", { class: "muted small" }, "　附圖") : null,
+      n.body ? h("span", { class: "sub" }, n.body.split("\n")[0]) : null,
+      n.problems.length ? h("div", { class: "problem" }, n.problems.join("；")) : null),
+    h("td", { class: "nowrap" }, NOTICE_TYPES[n.category]),
+    h("td", { class: "nowrap" }, gradesText(n.grades) || "全部"),
+    h("td", { class: "nowrap" }, n.ends_on ? fmtMD(n.ends_on) : ""),
+    h("td", { class: "nowrap" }, status));
+}
+function pickNoticeType() {
+  openDialog("新增", (box) => {
+    const options = [["closure", "停課通知"], ["exam", "考試公告"], ["event", "活動"], ["enrollment", "招生"], ["general", "一般公告"], ["calendar", "行事曆"]];
+    box.append(h("div", { class: "choices" }, options.map(([k, t]) =>
+      h("button", { type: "button", class: "btn", onclick: () => { closeDialog(); editNotice(null, k); } }, t))),
+      h("div", { class: "acts" }, h("button", { class: "btn", onclick: closeDialog }, "取消")));
+  });
+}
+
+// ---- 快速填寫：依類型填幾個欄位，自動產生標題和內容
+const TEMPLATES = {
+  closure: {
+    fields: [["date", "停課日期", "date"], ["slot", "時段", ["全天", "下午", "晚上"]], ["reason", "原因", "text", "颱風"], ["makeup", "補課", "text", "補課時間另行通知"]],
+    build(v, g) {
+      if (!v.date) return null;
+      const reason = (v.reason || "").trim();
+      const why = reason ? `因${reason}${reason.endsWith("影響") ? "" : "影響"}` : "因故";
+      const makeup = (v.makeup || "").trim().replace(/。$/, "");
+      return { title: `${reason || "臨時"}停課：${dayTitle(v.date)}${v.slot === "全天" ? "" : v.slot}`,
+               body: `${why}，${dayBody(v.date)}${v.slot}${g ? g + "的" : "所有"}課程停課。${makeup ? makeup + "。" : ""}`,
+               ends_on: v.date };
+    },
+  },
+  exam: {
+    fields: [["exam", "考試", ["段考", "模擬考", "小考", "複習考"]], ["subject", "科目", "text", "", "數學、英文"], ["date", "考試日期", "date"], ["scope", "範圍", "textarea", "", "第 1～3 章"]],
+    build(v, g) {
+      const title = `${g}${(v.subject || "").replace(/[、,，\s]+/g, "")}${v.exam || "考試"}範圍`;
+      const lines = [];
+      if (v.date) lines.push(`考試日期：${dayBody(v.date)}`);
+      if (v.subject) lines.push(`科目：${v.subject}`);
+      if (v.scope) lines.push(`範圍：${v.scope}`);
+      return { title, body: lines.join("\n"), ends_on: v.date || null };
+    },
+  },
+  event: {
+    fields: [["name", "活動名稱", "text"], ["date", "日期", "date"], ["time", "時間", "text", "", "19:00–20:30"], ["place", "地點", "text"], ["more", "說明", "textarea"]],
+    build(v) {
+      if (!v.name) return null;
+      const lines = [];
+      if (v.date) lines.push(`日期：${dayBody(v.date)}`);
+      if (v.time) lines.push(`時間：${v.time}`);
+      if (v.place) lines.push(`地點：${v.place}`);
+      if (v.more) lines.push(v.more);
+      return { title: v.name, body: lines.join("\n"), ends_on: v.date || null };
+    },
+  },
+  enrollment: {
+    fields: [["name", "名稱", "text"], ["start", "開課日", "date"], ["time", "上課時間", "text", "", "週一到週五 9:00–12:00"], ["fee", "學費", "text", "", "6,000 元"], ["deadline", "報名截止", "date"], ["more", "說明", "textarea"]],
+    build(v) {
+      if (!v.name) return null;
+      const lines = [];
+      if (v.start) lines.push(`開課：${dayBody(v.start)}`);
+      if (v.time) lines.push(`上課時間：${v.time}`);
+      if (v.fee) lines.push(`學費：${v.fee}`);
+      if (v.deadline) lines.push(`報名截止：${dayBody(v.deadline)}`);
+      if (v.more) lines.push(v.more);
+      lines.push("報名請洽櫃台，或點「找真人客服」留言。");
+      return { title: v.name, body: lines.join("\n"), ends_on: v.deadline || v.start || null };
+    },
+  },
+  calendar: {
+    fields: [["month", "月份", "month"]],
+    build(v, g) {
+      if (!v.month) return null;
+      const m = Number(v.month.split("-")[1]);
+      return { title: `${m}月行事曆${g ? `（${g}）` : ""}`, body: null, ends_on: null };
+    },
+  },
+};
+const tagFor = (title, grades) => { const t = gradesText(grades); return t && !title.includes(t) ? `（${t}）` : ""; };
+function noticeText(category, title, body, grades) {
+  const head = `【${title || "（標題）"}】${tagFor(title || "", grades)}`;
+  const text = body || "（內容在圖片裡，請看下方圖片）";
+  if (category === "closure") return `⚠️ 最新公告\n\n${head}\n${text}`;
+  if (category === "calendar") return `📅 行事曆\n\n${head}\n${body || "（行事曆在圖片裡，請看下方圖片）"}`;
+  return `📢 公告\n\n${head}\n${text}`;
+}
+function readFile(file) {
+  return new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = reject; r.readAsDataURL(file); });
+}
+function imagePicker({ current, onChange, aiPurpose, onAiText, disabled }) {
+  // current：已經存在的圖片網址；onChange({data, name} | null, removed)
+  let src = current || null;
+  let lastImage = null;
+  const img = h("img", { alt: "預覽", class: src ? "" : "hidden", src: src || undefined });
+  const file = h("input", { type: "file", accept: "image/*", class: "hidden" });
+  const pick = h("button", { class: "btn sm", type: "button", disabled: !!disabled, onclick: () => file.click() }, src ? "換一張" : "選擇圖片");
+  const remove = h("button", { class: "btn sm danger" + (src ? "" : " hidden"), type: "button", onclick: () => {
+    src = null; img.classList.add("hidden"); remove.classList.add("hidden"); aiBtn.classList.add("hidden"); pick.textContent = "選擇圖片";
+    lastImage = null; onChange(null, true);
+  } }, "拿掉圖片");
+  const aiOk = state.status?.ai?.vision;
+  const aiBtn = h("button", { class: "btn sm hidden", type: "button" }, "用 AI 讀圖上的字");
+  aiBtn.addEventListener("click", busy(aiBtn, async () => {
+    if (!aiOk) return toast("要先在 .env 設定 ANTHROPIC_API_KEY", "red");
+    if (!lastImage) return toast("請先選一張新的圖片", "red");
+    aiBtn.textContent = "讀圖中…";
+    try {
+      const r = await attempt(() => api("/content/read-image", { method: "POST", body: { image: lastImage, purpose: aiPurpose } }));
+      onAiText(r.text, r.unclear || []);
+    } finally { aiBtn.textContent = "用 AI 讀圖上的字"; }
+  }));
+  const drop = h("div", { class: "drop" }, img, h("div", { class: "txt" }, pick, remove, aiBtn,
+    disabled ? h("span", { class: "small muted" }, disabled) : null), file);
+  async function take(f) {
+    if (!f || disabled) return;
+    if (/heic|heif/i.test(f.type) || /\.(heic|heif)$/i.test(f.name)) return toast("iPhone 的 HEIC 照片 LINE 不支援，請改成 JPG 或截圖", "red");
+    if (!f.type.startsWith("image/")) return toast("請選圖片檔（JPG、PNG）", "red");
+    if (f.size > 20 * 1024 * 1024) return toast("圖片太大了（上限 20MB）", "red");
+    const data = await readFile(f);
+    lastImage = { data, name: f.name };
+    src = data; img.src = data; img.classList.remove("hidden"); remove.classList.remove("hidden"); pick.textContent = "換一張";
+    if (aiPurpose && aiOk) aiBtn.classList.remove("hidden");
+    onChange(lastImage, false);
+  }
+  file.addEventListener("change", () => take(file.files[0]));
+  drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("over"); });
+  drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+  drop.addEventListener("drop", (e) => { e.preventDefault(); drop.classList.remove("over"); take(e.dataTransfer.files[0]); });
+  return { el: drop, src: () => src, set(url) { src = url; img.src = url || ""; img.classList.toggle("hidden", !url); remove.classList.toggle("hidden", !url); pick.textContent = url ? "換一張" : "選擇圖片"; } };
+}
+
+function editNotice(n, category) {
+  const isNew = !n;
+  const v = { category: n?.category || category || "general", title: n?.title || "", body: n?.body || "", grades: n?.grades || [],
+              ends_on: n?.ends_on || "", image: null, remove_image: false };
+  const tpl = {};             // 快速填寫的欄位值
+  const touched = { title: !isNew, body: !isNew };
+  const typeName = () => (v.category === "calendar" ? "行事曆" : NOTICE_TYPES[v.category]);
+  openSheet(isNew ? `新增${typeName()}` : n.title, (body, foot, titleEl) => {
+    const title = h("input", { type: "text", value: v.title, maxlength: 60, "aria-label": "標題" });
+    const text = h("textarea", { rows: 7, "aria-label": "內容" }, v.body);
+    const ends = h("input", { type: "date", value: v.ends_on || "" });
+    const prev = preview([]);
+    const regenTitle = h("button", { type: "button", class: "btn link small hidden", onclick: () => { touched.title = false; regen(); } }, "重新產生");
+    const regenBody = h("button", { type: "button", class: "btn link small hidden", onclick: () => { touched.body = false; regen(); } }, "重新產生");
+    const helperBox = h("div");
+    function regen() {
+      const t = TEMPLATES[v.category];
+      const out = t && isNew ? t.build(tpl, gradesText(v.grades)) : null;
+      if (out) {
+        if (!touched.title && out.title) { title.value = out.title; v.title = out.title; }
+        if (!touched.body && out.body != null) { text.value = out.body; v.body = out.body; }
+        if (out.ends_on && !ends.dataset.touched) { ends.value = out.ends_on; v.ends_on = out.ends_on; }
+      }
+      regenTitle.classList.toggle("hidden", !(isNew && t && touched.title));
+      regenBody.classList.toggle("hidden", !(isNew && t && touched.body && v.category !== "calendar"));
+      paintPreview();
+    }
+    function paintPreview() {
+      const ask = v.category === "calendar" ? "行事曆" : v.category === "closure" ? "課程介紹"
+        : (gradesText(v.grades) || "") + ({ exam: "段考範圍", event: "最近有什麼活動", enrollment: "寒假有開班嗎", general: "最新公告" }[v.category] || "");
+      const items = [{ kind: "me", text: ask }, { kind: "text", text: noticeText(v.category, v.title, v.body.trim(), v.grades) }];
+      const src = picker.src();
+      if (src) items.push({ kind: "image", src });
+      prev.render(items);
+    }
+    function drawHelper() {
+      const t = TEMPLATES[v.category];
+      helperBox.replaceChildren();
+      if (!isNew || !t) return;
+      const inputs = t.fields.map(([k, label, type, def, ph]) => {
+        if (tpl[k] === undefined) tpl[k] = Array.isArray(type) ? type[type.length === 3 ? 2 : 0] : def || "";
+        let input;
+        if (Array.isArray(type)) input = seg(type.map((o) => [o, o]), tpl[k], (x) => { tpl[k] = x; regen(); }, label);
+        else if (type === "textarea") input = h("textarea", { rows: 3, placeholder: ph || "", "aria-label": label, oninput: (e) => { tpl[k] = e.target.value; regen(); } }, tpl[k]);
+        else input = h("input", { type, value: tpl[k], placeholder: ph || "", "aria-label": label, oninput: (e) => { tpl[k] = e.target.value; regen(); } });
+        return field(label, input, { span: type === "textarea" });
+      });
+      helperBox.append(h("div", { class: "helper" }, h("div", { class: "lab" }, "快速填寫"), h("div", { class: "grid2" }, inputs)));
+    }
+    const picker = imagePicker({
+      current: n?.image ? "/admin/api/content/image?path=" + encodeURIComponent(n.image) : null,
+      aiPurpose: v.category === "calendar" ? "calendar" : "announcement",
+      onAiText: (txt, unclear) => {
+        if (v.body.trim() && !confirm("用 AI 讀出來的文字取代現在的內容？")) return;
+        text.value = txt; v.body = txt; touched.body = true; paintPreview();
+        if (unclear.length) toast("看不清楚的地方：" + unclear.join("、") + "，請對照圖片檢查", "red");
+      },
+      onChange: (img, removed) => { v.image = img; v.remove_image = removed; paintPreview(); },
+    });
+    title.addEventListener("input", () => { v.title = title.value; touched.title = true; regen(); });
+    text.addEventListener("input", () => { v.body = text.value; touched.body = true; regen(); });
+    ends.addEventListener("input", () => { v.ends_on = ends.value; ends.dataset.touched = "1"; paintPreview(); });
+    const typeSeg = seg(Object.entries(NOTICE_TYPES), v.category, (x) => {
+      v.category = x; if (isNew) titleEl.textContent = `新增${typeName()}`; drawHelper(); regen();
+    }, "類型");
+    const problems = n?.problems?.length ? h("div", { class: "alert error" }, h("div", { class: "body" }, n.problems.join("；"))) : null;
+    const draft = n?.draft ? h("div", { class: "alert warn" }, h("div", { class: "body" }, "這段文字是 AI 從圖片讀出來的，請對照圖片檢查後儲存。")) : null;
+    body.append(h("div", { class: "editor" },
+      h("div", { class: "stack" }, problems, draft,
+        field("類型", typeSeg),
+        field("年級", gradePicker(v.grades, (g) => { v.grades = g; regen(); })),
+        helperBox,
+        h("div", { class: "field" }, h("span", { class: "lab" }, "標題", h("em", {}, "必填"), regenTitle), title),
+        h("div", { class: "field" }, h("span", { class: "lab" }, v.category === "calendar" ? "文字版" : "內容", v.category === "calendar" ? h("span", { class: "hint" }, "選填") : null, regenBody), text),
+        field("圖片", picker.el),
+        field("顯示到", ends, { hint: "選填，過了這天自動下架" })),
+      h("div", { class: "side-preview" }, prev.el)));
+    const save = h("button", { class: "btn primary" }, isNew ? "發布" : "儲存");
+    save.addEventListener("click", busy(save, async () => {
+      if (!v.title.trim()) return toast("請填標題", "red");
+      const payload = { key: n?.key || null, outside_id: n?.outside_id || null, category: v.category, title: v.title.trim(), body: v.body,
+        grades: v.grades, ends_on: v.ends_on || null, image: v.image, remove_image: v.remove_image };
+      const r = await attempt(() => api("/content/notices/save", { method: "POST", body: payload }));
+      if (r.problems?.length) toast("已存檔，但有問題：" + r.problems.join("；"), "red");
+      else toast(isNew ? "已發布" : "已儲存");
+      closeSheet(); refreshStatus(); if (state.page === "notices") reload();
+    }));
+    put(foot, save, h("button", { class: "btn", onclick: () => closeSheet() }, "取消"),
+      !isNew && n?.key && n.status === "live" ? h("button", { class: "btn", onclick: () => broadcastNotice(n) }, "用 LINE 推播") : null,
+      h("span", { class: "spacer" }),
+      n?.key ? h("button", { class: "btn danger", onclick: async () => {
+        if (!confirm(`刪除「${n.title}」？家長就看不到了，資料夾裡的檔案也會刪掉。`)) return;
+        await attempt(() => api("/content/notices/delete", { method: "POST", body: { key: n.key } }), "已刪除");
+        closeSheet(); refreshStatus(); reload();
+      } }, "刪除") : null);
+    drawHelper(); regen();
+  });
+}
+
+// ======================================================================= 常見問題
+RENDER.faq = async (main) => {
+  const data = await loadContent();
+  main.replaceChildren(pageHead("常見問題", data.enabled ? h("button", { class: "btn primary", onclick: () => editFaq(null) }, "新增") : null));
+  if (!data.enabled) folderOff(main);
+  const outside = data.outside.filter((o) => o.table === "kb_articles");
+  if (outside.length) main.append(h("section", { class: "block" }, h("h2", { class: "sec" }, "不在資料夾裡的題目", h("span", { class: "muted" }, "家長也看得到")),
+    outside.map((o) => h("div", { class: "alert" }, h("div", { class: "body" }, o.title),
+      h("div", { class: "acts" }, h("button", { class: "btn sm danger", onclick: () => deleteOutside(o.table, o.id, o.title) }, "刪除"))))),
+    h("div", { style: "height:20px" }));
+  const order = Object.keys(FAQ_TYPES);
+  const faqs = [...data.faqs].sort((a, b) => order.indexOf(a.category) - order.indexOf(b.category));
+  main.append(table(["分類", "題目", "答案", ""], faqs.map((a) => {
+    const row = clickRow(() => editFaq(a),
+      h("td", { class: "nowrap" }, FAQ_TYPES[a.category]),
+      h("td", {}, a.title, [...a.title].length > 20 ? h("div", { class: "small st-amber" }, "超過 20 字，按鈕會被截斷") : null,
+        a.problems.length ? h("div", { class: "problem" }, a.problems.join("；")) : null),
+      h("td", {}, h("span", { class: "sub" }, (a.body || "（只有圖片）").split("\n")[0])),
+      h("td", { class: "nowrap" }, a.image ? "附圖" : "", !a.live ? h("span", { class: "st-red" }, "家長看不到") : null));
+    if (!a.live) row.classList.add("dim");
+    return row;
+  }), "還沒有常見問題"));
+};
+function editFaq(a) {
+  const isNew = !a;
+  const v = { category: a?.category || "other", title: a?.title || "", body: a?.body || "", keywords: (a?.keywords || []).join("、"),
+              sort: a?.sort || null, image: null, remove_image: false };
+  openSheet(isNew ? "新增常見問題" : a.title, (body, foot) => {
+    const title = h("input", { type: "text", value: v.title, maxlength: 40, "aria-label": "題目" });
+    const count = h("span", { class: "hint" });
+    const text = h("textarea", { rows: 7, "aria-label": "答案" }, v.body);
+    const kw = h("input", { type: "text", value: v.keywords });
+    const sort = h("input", { type: "number", min: 0, max: 999, value: v.sort ?? "" });
+    const prev = preview([]);
+    const paint = () => {
+      count.textContent = `${[...v.title].length}/20`;
+      count.style.color = [...v.title].length > 20 ? "var(--red)" : "";
+      const items = [{ kind: "me", text: v.title || "（題目）" }, { kind: "text", text: `【${v.title || "（題目）"}】\n${v.body.trim() || "（答案在圖片裡，請看下方圖片）"}` }];
+      if (picker.src()) items.push({ kind: "image", src: picker.src() });
+      prev.render(items);
+    };
+    const picker = imagePicker({
+      current: a?.image ? "/admin/api/content/image?path=" + encodeURIComponent(a.image) : null, aiPurpose: "kb",
+      onAiText: (txt) => { if (v.body.trim() && !confirm("用 AI 讀出來的文字取代現在的答案？")) return; text.value = txt; v.body = txt; paint(); },
+      onChange: (img, removed) => { v.image = img; v.remove_image = removed; paint(); },
+    });
+    title.addEventListener("input", () => { v.title = title.value; paint(); });
+    text.addEventListener("input", () => { v.body = text.value; paint(); });
+    body.append(h("div", { class: "editor" },
+      h("div", { class: "stack" },
+        a?.problems?.length ? h("div", { class: "alert error" }, h("div", { class: "body" }, a.problems.join("；"))) : null,
+        field("分類", seg(Object.entries(FAQ_TYPES), v.category, (x) => (v.category = x), "分類")),
+        h("label", { class: "field" }, h("span", { class: "lab" }, "題目", h("em", {}, "必填"), count), title),
+        field("答案", text),
+        field("圖片", picker.el),
+        h("div", { class: "grid2" },
+          field("關鍵字", kw, { hint: "選填，用頓號分開" }),
+          field("排序", sort, { hint: "選填，小的在前" }))),
+      h("div", { class: "side-preview" }, prev.el)));
+    const save = h("button", { class: "btn primary" }, isNew ? "新增" : "儲存");
+    save.addEventListener("click", busy(save, async () => {
+      if (!v.title.trim()) return toast("請填題目", "red");
+      const payload = { key: a?.key || null, category: v.category, title: v.title.trim(), body: v.body,
+        keywords: kw.value.split(/[、,，;；\s]+/).filter(Boolean), sort: sort.value === "" ? null : Number(sort.value),
+        image: v.image, remove_image: v.remove_image };
+      const r = await attempt(() => api("/content/faqs/save", { method: "POST", body: payload }));
+      if (r.problems?.length) toast("已存檔，但有問題：" + r.problems.join("；"), "red"); else toast("已儲存");
+      closeSheet(); refreshStatus(); if (state.page === "faq") reload();
+    }));
+    put(foot, save, h("button", { class: "btn", onclick: () => closeSheet() }, "取消"), h("span", { class: "spacer" }),
+      !isNew ? h("button", { class: "btn danger", onclick: async () => {
+        if (!confirm(`刪除「${a.title}」？`)) return;
+        await attempt(() => api("/content/faqs/delete", { method: "POST", body: { key: a.key } }), "已刪除");
+        closeSheet(); refreshStatus(); reload();
+      } }, "刪除") : null);
+    paint();
+  });
+}
+
+// ======================================================================= 榜單
+RENDER.honors = async (main) => {
+  const data = await loadContent();
+  const rows = data.honors.map((r) => ({ ...r }));
+  const tbody = h("tbody");
+  const prev = preview([]);
+  const save = h("button", { class: "btn primary" }, "儲存");
+  const paint = () => {
+    tbody.replaceChildren(...rows.map((r, i) => {
+      const inp = (k, attrs = {}) => h("input", { type: "text", value: r[k] ?? "", ...attrs, oninput: (e) => { r[k] = e.target.value; paintPreview(); } });
+      return h("tr", {},
+        h("td", { style: "width:84px" }, inp("school_year", { type: "number", "aria-label": "學年度" })),
+        h("td", { style: "width:110px" }, inp("category", { "aria-label": "類別" })),
+        h("td", {}, inp("display_name", { "aria-label": "顯示名稱", placeholder: "王○明" })),
+        h("td", {}, inp("school_name", { "aria-label": "學校" })),
+        h("td", {}, inp("achievement", { "aria-label": "成績" })),
+        h("td", { style: "text-align:center" }, h("input", { type: "checkbox", checked: r.consent, "aria-label": "家長同意", style: "width:16px;height:16px",
+          onchange: (e) => { r.consent = e.target.checked; paintPreview(); } })),
+        h("td", {}, h("button", { class: "btn sm danger", "aria-label": "刪除這一列", onclick: () => { rows.splice(i, 1); paint(); } }, "刪除")));
+    }));
+    paintPreview();
+  };
+  const paintPreview = () => {
+    const shown = rows.filter((r) => r.consent && r.display_name && r.achievement).sort((a, b) => Number(b.school_year) - Number(a.school_year));
+    const lines = [];
+    let year = null;
+    for (const r of shown) {
+      if (String(r.school_year) !== year) { year = String(r.school_year); lines.push(`🏆 ${year} 學年度榜單`); }
+      lines.push(`・${r.display_name}${r.school_name ? `（${r.school_name}）` : ""} ${r.category} ${r.achievement}`);
+    }
+    prev.render([{ kind: "me", text: "榜單" }, { kind: "text", text: lines.length ? lines.join("\n") + "\n\n恭喜同學們！想了解課程，請點「課程介紹」。" : "榜單整理中，請稍後再查詢 🙏" }]);
+  };
+  save.addEventListener("click", busy(save, async () => {
+    const clean = rows.filter((r) => [r.display_name, r.achievement, r.category].some((x) => String(x || "").trim()));
+    for (const r of clean) if (!r.school_year || !String(r.category || "").trim() || !String(r.display_name || "").trim() || !String(r.achievement || "").trim())
+      return toast("每一列都要填學年度、類別、名字和成績", "red");
+    const r = await attempt(() => api("/content/honors/save", { method: "POST", body: { rows: clean.map((x) => ({
+      school_year: Number(x.school_year), category: x.category.trim(), display_name: x.display_name.trim(), school_name: (x.school_name || "").trim() || null,
+      achievement: x.achievement.trim(), consent: !!x.consent })) } }));
+    toast(r.problems?.length ? "已存檔，但有問題：" + r.problems.join("；") : "已儲存", r.problems?.length ? "red" : "");
+    refreshStatus(); reload();
+  }));
+  const year = new Date().getFullYear() - 1911 - (new Date().getMonth() < 7 ? 1 : 0);
+  main.replaceChildren(pageHead("榜單", data.enabled ? save : null));
+  if (!data.enabled) { folderOff(main); return; }
+  main.append(h("div", { class: "editor" },
+    h("div", { class: "panel" }, h("div", { class: "table-wrap" }, h("table", { class: "edit-honors" },
+      h("thead", {}, h("tr", {}, ["學年度", "類別", "名字", "學校", "成績／錄取", "家長同意", ""].map((t) => h("th", {}, t)))), tbody)),
+      h("div", { style: "padding:10px 12px;border-top:1px solid var(--line)" },
+        h("button", { class: "btn sm", onclick: () => { rows.push({ school_year: year, category: "會考", display_name: "", school_name: "", achievement: "", consent: false }); paint(); tbody.lastChild?.querySelector("td:nth-child(3) input")?.focus(); } }, "新增一列"))),
+    h("div", { class: "side-preview" }, prev.el)));
+  paint();
+};
+
+// ======================================================================= 學生與家長
+const studentFilter = { q: "", grade: "", status: "active" };
+RENDER.students = async (main) => {
+  const list = h("div");
+  const count = h("span", { class: "muted small" });
+  async function refresh() {
+    const rows = await api("/students?" + new URLSearchParams(studentFilter));
+    count.textContent = `${rows.length} 人`;
+    list.replaceChildren(table(["姓名", "年級", "家長", "LINE", "班級", ""], rows.map((s) => clickRow(() => openStudent(s.id),
+      h("td", {}, s.name, h("span", { class: "sub" }, s.school_name || s.student_no)),
+      h("td", { class: "nowrap" }, s.grade_label),
+      h("td", {}, s.guardians.length ? s.guardians.map((g, i) => h("div", { class: i ? "muted small" : "" }, `${g.name}（${g.relationship}）${g.phone ? " " + g.phone : ""}`))
+                                     : h("span", { class: "st-red" }, "沒有家長資料")),
+      h("td", { class: "nowrap" }, s.line_bound ? h("span", { class: "st-green" }, "已綁定") : h("span", { class: "muted" }, "未綁定")),
+      h("td", {}, s.courses.length ? s.courses.map((c) => h("div", {}, c.name, c.status === "trial" ? h("span", { class: "muted small" }, "（試聽）") : null)) : h("span", { class: "muted" }, "—")),
+      h("td", { class: "nowrap" }, s.status === "active" ? "" : STUDENT_STATUS[s.status]))),
+      studentFilter.q ? "找不到符合的學生" : "還沒有學生"));
+  }
+  state.refreshList = refresh;
+  let timer;
+  const search = h("input", { type: "search", placeholder: "姓名、學校、家長姓名或電話", value: studentFilter.q, "aria-label": "搜尋學生",
+    oninput: () => { clearTimeout(timer); timer = setTimeout(() => { studentFilter.q = search.value.trim(); refresh(); }, 250); } });
+  const grades = seg([["", "全部"], ...GRADES.map(([g, l]) => [String(g), l]), ["graduated", "已畢業"]], studentFilter.grade,
+    (v) => { studentFilter.grade = v; refresh(); }, "年級");
+  const status = select([["active", "在學"], ["paused", "暫停"], ["left", "離班"], ["all", "全部狀態"]], studentFilter.status,
+    { "aria-label": "狀態", style: "width:auto", onchange: (e) => { studentFilter.status = e.target.value; refresh(); } });
+  main.replaceChildren(
+    pageHead("學生與家長", h("button", { class: "btn primary", onclick: () => newStudent({}) }, "新增學生")),
+    h("div", { class: "toolbar" }, search, grades, status, count),
+    list);
+  await refresh();
+};
+function refreshCurrentPage() {
+  if (state.page === "students" && state.refreshList) state.refreshList().catch(() => {});
+  if (state.page === "courses" && state.view) RENDER.courses(state.view).catch(() => {});
+}
+async function loadCourses() { state.courses = await api("/courses"); }
+async function loadSubjects() { state.subjects = await api("/subjects"); }
+
+async function openStudent(id) {
+  const s = await attempt(() => api(`/students/${id}`));
+  await loadCourses();
+  openSheet(s.name, (body, foot, titleEl) => {
+    put(titleEl, gradeTag(s.grade, s.grade_label), s.status !== "active" ? h("span", { class: "tag" }, STUDENT_STATUS[s.status]) : null);
+    // ---- 家長（最常用：綁定 LINE）
+    const parents = h("div", { class: "card" }, h("h3", {}, "家長", h("span", { class: "muted" }, s.family.family_name)));
+    for (const g of s.all_guardians.filter((x) => x.is_active)) parents.append(guardianBlock(g, id));
+    parents.append(addGuardian(s.family.id, id));
+    const famPhone = h("input", { type: "tel", value: s.family.phone || "" });
+    const famAddr = h("input", { type: "text", value: s.family.address || "" });
+    const famSave = h("button", { class: "btn sm" }, "儲存");
+    famSave.addEventListener("click", busy(famSave, () => attempt(() => api(`/families/${s.family.id}`, { method: "PATCH", body: { phone: valueOrNull(famPhone), address: valueOrNull(famAddr) } }), "已儲存")));
+    parents.append(h("details", { style: "margin-top:10px" }, h("summary", { class: "small" }, "家裡電話、地址"),
+      h("div", { class: "grid2", style: "margin-top:10px" }, field("家裡電話", famPhone), field("地址", famAddr)), h("div", { style: "margin-top:10px" }, famSave)));
+    if (s.siblings.length) parents.append(h("p", { class: "small", style: "margin:10px 0 0" }, "兄弟姊妹：",
+      s.siblings.map((x) => h("button", { class: "btn link", onclick: () => openStudent(x.id) }, `${x.name}（${x.grade_label}）`))));
+    // ---- 班級
+    const current = s.enrollments.filter((e) => ["trial", "active"].includes(e.status));
+    const past = s.enrollments.filter((e) => !["trial", "active"].includes(e.status));
+    const classes = h("div", { class: "card" }, h("h3", {}, "上的班", h("span", { class: "muted" }, `${current.length} 個`)));
+    for (const e of current) classes.append(h("div", { class: "person" },
+      h("div", { class: "who" }, h("div", {}, h("button", { class: "btn link", style: "padding-left:0", onclick: () => openCourse(e.course_id) }, e.course_name),
+        e.status === "trial" ? h("span", { class: "tag amber" }, "試聽") : null, h("span", { class: "muted small" }, `　${fmtDate(e.start_date)} 起`))),
+      h("div", { class: "tags" },
+        e.status === "trial" ? h("button", { class: "btn sm", onclick: () => setEnrollment(e.id, "active", `${s.name} 轉為正式`, () => openStudent(id)) }, "轉為正式") : null,
+        h("button", { class: "btn sm danger", onclick: () => { if (confirm(`${s.name} 要退出「${e.course_name}」？`)) setEnrollment(e.id, "dropped", "已退班", () => openStudent(id)); } }, "退班"))));
+    const open = state.courses.filter((c) => c.status === "open" && !current.some((e) => e.course_id === c.id))
+      .sort((a, b) => (b.grade === s.grade) - (a.grade === s.grade) || (a.grade || 99) - (b.grade || 99) || a.name.localeCompare(b.name));
+    if (s.status !== "left" && open.length) {
+      const pick = select([["", "選擇要加入的班"], ...open.map((c) => [c.id, `${c.name}（${c.grade_label || "不分年級"}）`])], "", { "aria-label": "要加入的班" });
+      const trial = h("input", { type: "checkbox" });
+      const join = h("button", { class: "btn primary sm" }, "加入");
+      join.addEventListener("click", busy(join, async () => {
+        if (!pick.value) return toast("請先選一個班", "red");
+        const c = state.courses.find((x) => String(x.id) === pick.value);
+        if (c.grade && c.grade !== s.grade && !confirm(`${s.name} 是${s.grade_label}，「${c.name}」是${c.grade_label}的班，確定要加入？`)) return;
+        await attempt(() => api(`/courses/${c.id}/enroll`, { method: "POST", body: { student_id: id, status: trial.checked ? "trial" : "active" } }), `${s.name} 已加入 ${c.name}`);
+        refreshCurrentPage(); openStudent(id);
+      }));
+      classes.append(h("div", { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px" }, h("div", { style: "flex:1 1 220px" }, pick),
+        h("label", { class: "check small" }, trial, "試聽"), join));
+    }
+    if (past.length) classes.append(h("details", { style: "margin-top:10px" }, h("summary", { class: "small" }, `以前上過的班（${past.length}）`),
+      h("ul", { class: "small" }, past.map((e) => h("li", {}, `${e.course_name}：${ENROLL_STATUS[e.status]}（${fmtDate(e.start_date)}～${fmtDate(e.end_date)}）`)))));
+    // ---- 基本資料
+    const f = {
+      name: h("input", { type: "text", value: s.name }), school_name: h("input", { type: "text", value: s.school_name || "" }),
+      student_no: h("input", { type: "text", value: s.student_no }), phone: h("input", { type: "tel", value: s.phone || "" }),
+      joined_on: h("input", { type: "date", value: s.joined_on || "" }), status: select(Object.entries(STUDENT_STATUS), s.status),
+      note: h("textarea", { rows: 2 }, s.note || ""),
+    };
+    let grade = s.grade >= 6 && s.grade <= 9 ? s.grade : null;
+    const basics = h("div", { class: "card" }, h("h3", {}, "基本資料"),
+      h("div", { class: "grid2" },
+        field("姓名", f.name, { required: true }),
+        field("年級", seg(GRADES, grade, (v) => (grade = v), "年級"), { hint: s.grade > 9 ? `目前：${s.grade_label}` : null }),
+        field("就讀學校", f.school_name), field("學號", f.student_no),
+        field("學生手機", f.phone), field("入班日", f.joined_on),
+        field("狀態", f.status), field("備註", f.note, { span: true, hint: "只有後台看得到" })));
+    body.append(parents, classes, basics);
+    const save = h("button", { class: "btn primary" }, "儲存");
+    save.addEventListener("click", busy(save, async () => {
+      const patch = { name: f.name.value.trim(), school_name: valueOrNull(f.school_name), student_no: valueOrNull(f.student_no),
+        phone: valueOrNull(f.phone), joined_on: valueOrNull(f.joined_on), status: f.status.value, note: valueOrNull(f.note) };
+      if (grade && grade !== s.grade) patch.grade = grade;
+      if (patch.status === "left" && s.status !== "left" && !confirm(`把 ${s.name} 設成離班？他目前上的班會一起退掉。`)) return;
+      const r = await attempt(() => api(`/students/${id}`, { method: "PATCH", body: patch }), "已儲存");
+      if (r.dropped) toast(`已儲存，並退掉 ${r.dropped} 個班`);
+      refreshCurrentPage(); openStudent(id);
+    }));
+    foot.append(save, h("button", { class: "btn", onclick: () => closeSheet() }, "關閉"));
+  }, { narrow: true });
+}
+function guardianBlock(g, studentId) {
+  const line = h("div", { class: "line-state" });
+  const direct = () => h("button", { class: "btn sm", onclick: () => pickLine(g, studentId) }, "直接綁定");
+  if (g.line) put(line, h("span", { class: "st-green" }, "已綁定 LINE"), g.line_name ? h("span", { class: "muted" }, `（${g.line_name}）`) : null,
+    h("button", { class: "btn link small", onclick: async () => {
+      if (!confirm(`解除 ${g.name} 的 LINE 綁定？`)) return;
+      await attempt(() => api(`/guardians/${g.id}/line`, { method: "DELETE" }), "已解除綁定");
+      refreshCurrentPage(); openStudent(studentId);
+    } }, "解除綁定"));
+  else if (g.pending_code) put(line, h("span", { class: "muted" }, "綁定碼"), h("b", { class: "code" }, g.pending_code),
+    h("span", { class: "muted" }, `${fmtMD(String(g.code_expires_at).slice(0, 10))} 前有效`),
+    h("button", { class: "btn link small", onclick: () => showCode({ code: g.pending_code, expires_at: g.code_expires_at, guardian: g.name,
+      message: `請在「${SCHOOL}」的 LINE 官方帳號輸入：綁定 ${g.pending_code}` }) }, "顯示"),
+    h("button", { class: "btn link small", onclick: () => issueCode(g, studentId) }, "重發"), direct());
+  else line.append(h("span", { class: "muted" }, "沒有綁定 LINE"), direct(), h("button", { class: "btn sm", onclick: () => issueCode(g, studentId) }, "發綁定碼"));
+  const name = h("input", { type: "text", value: g.name, "aria-label": "家長姓名" });
+  const rel = select(RELATIONS.includes(g.relationship) ? RELATIONS.map((r) => [r, r]) : [[g.relationship, g.relationship], ...RELATIONS.map((r) => [r, r])], g.relationship, { "aria-label": "關係" });
+  const phoneIn = h("input", { type: "tel", value: g.phone || "", "aria-label": "電話" });
+  const edit = h("div", { class: "grid3 hidden", style: "margin-top:10px" }, field("姓名", name), field("關係", rel), field("電話", phoneIn),
+    h("div", { class: "span2", style: "display:flex;gap:8px" },
+      h("button", { class: "btn sm primary", onclick: () => attempt(() => api(`/guardians/${g.id}`, { method: "PATCH", body: { name: name.value.trim(), relationship: rel.value, phone: valueOrNull(phoneIn) } }), "已儲存").then(() => { refreshCurrentPage(); openStudent(studentId); }) }, "儲存"),
+      h("button", { class: "btn sm danger", onclick: async () => {
+        if (!confirm(`移除家長 ${g.name}？`)) return;
+        const r = await attempt(() => api(`/guardians/${g.id}`, { method: "DELETE" }));
+        toast(r.how === "停用" ? "這位家長有其他紀錄，已改成停用" : "已移除"); openStudent(studentId);
+      } }, "移除這位家長")));
+  return h("div", { class: "person" },
+    h("div", { class: "who" }, h("div", {}, h("b", {}, `${g.name}（${g.relationship}）`), g.is_primary ? h("span", { class: "muted small" }, "　主要聯絡人") : null),
+      h("span", { class: "muted small" }, g.phone || "沒有電話"), line, edit),
+    h("div", {}, h("button", { class: "btn sm", onclick: (e) => { edit.classList.toggle("hidden"); e.currentTarget.textContent = edit.classList.contains("hidden") ? "修改" : "收起"; } }, "修改")));
+}
+async function issueCode(g, studentId) {
+  if (g.pending_code && !confirm("重發會讓舊的綁定碼失效，確定要重發？")) return;
+  const r = await attempt(() => api(`/guardians/${g.id}/binding-code`, { method: "POST" }));
+  showCode(r);
+  refreshCurrentPage(); if (document.querySelector(".sheet")) openStudent(studentId);
+}
+function showCode(r) {
+  openDialog(`${r.guardian} 的綁定碼`, (box) => {
+    const copy = h("button", { class: "btn primary", onclick: () => navigator.clipboard?.writeText(r.message).then(() => toast("已複製")) }, "複製說明");
+    box.append(h("div", { class: "bigcode", "aria-label": "綁定碼" }, r.code),
+      h("p", {}, "家長在官方帳號輸入：", h("b", {}, `綁定 ${r.code}`)),
+      h("p", { class: "muted small" }, `${fmtDate(String(r.expires_at).slice(0, 10))} 前有效，只能用一次。`),
+      h("div", { class: "acts" }, h("button", { class: "btn", onclick: closeDialog }, "關閉"), copy));
+  });
+}
+// LINE 名單：傳過訊息給官方帳號的 LINE（最近的在上面）。直接綁定家長、設定收通知的員工都用這個
+function lineList({ load, onPick, pickLabel = "選這個" }) {
+  let timer;
+  const list = h("div", { class: "picks", "aria-live": "polite" }, h("div", { class: "empty" }, "載入中…"));
+  const search = h("input", { type: "search", placeholder: "搜尋 LINE 名稱或訊息內容", "aria-label": "搜尋 LINE",
+    oninput: () => { clearTimeout(timer); timer = setTimeout(refresh, 250); } });
+  const again = h("button", { class: "btn", type: "button" }, "重新整理");
+  again.addEventListener("click", busy(again, () => refresh()));
+  const initial = (c) => h("span", { class: "avatar", "aria-hidden": "true" }, (c.display_name || "?").trim().slice(0, 1));
+  function row(c) {
+    const avatar = c.picture_url
+      ? h("img", { class: "avatar", src: c.picture_url, alt: "", loading: "lazy", referrerpolicy: "no-referrer", onerror: (e) => e.target.replaceWith(initial(c)) })
+      : initial(c);
+    const btn = h("button", { class: "btn sm" + (c.selectable && c.hints.length ? " primary" : ""), type: "button", disabled: !c.selectable }, pickLabel);
+    const el = h("div", { class: "pick" + (c.selectable ? "" : " dim") }, avatar,
+      h("div", { class: "main" },
+        h("div", { class: "title" }, c.display_name || "（沒有 LINE 名稱）", c.hints.map((t) => h("span", { class: "tag amber" }, t)),
+          c.bound_text ? h("span", { class: "tag" }, c.bound_text) : null),
+        c.recent.length ? c.recent.slice(0, 3).map((m) => h("div", { class: "said" }, h("span", { class: "muted" }, fmtStamp(m.at) + "　"), m.text))
+                        : h("div", { class: "said muted" }, `${fmtStamp(c.last_active_at)} 加好友，還沒傳過文字訊息`)),
+      btn);
+    btn.addEventListener("click", busy(btn, () => onPick(c, el)));
+    return el;
+  }
+  async function refresh() {
+    let rows;
+    try { rows = await load(search.value.trim()); } catch (e) { list.replaceChildren(h("div", { class: "empty" }, e.message)); return; }
+    list.replaceChildren(...(rows.length ? rows.map(row) : [h("div", { class: "empty" },
+      h("b", {}, search.value.trim() ? "找不到符合的 LINE" : "還沒有人傳訊息給官方帳號"), "請對方先在官方帳號傳一句話，再按「重新整理」。")]));
+  }
+  return { el: h("div", { class: "stack", style: "gap:8px" }, h("div", { class: "pick-bar" }, search, again), list), refresh, focus: () => search.focus() };
+}
+// 櫃台直接綁定：從傳過訊息給官方帳號的 LINE 裡挑一個（家長不用輸入綁定碼）
+async function pickLine(g, studentId) {
+  const picker = lineList({
+    load: (q) => api(`/guardians/${g.id}/line-candidates?` + new URLSearchParams({ q })),
+    pickLabel: "綁定",
+    onPick: async (c) => {
+      const who = c.display_name ? `LINE「${c.display_name}」` : "這個 LINE";
+      if (!confirm(`把${who}綁定為 ${g.name} 的 LINE？\n綁定後這個 LINE 可以查孩子的課表，請確認是本人。`)) return;
+      await attempt(() => api(`/guardians/${g.id}/line`, { method: "POST", body: { line_user_id: c.line_user_id } }), `已綁定 ${g.name} 的 LINE`);
+      closeDialog(); refreshCurrentPage(); openStudent(studentId);
+    },
+  });
+  openDialog(`幫 ${g.name} 綁定 LINE`, (box) => {
+    box.append(h("p", { class: "small muted" }, "家長要先在官方帳號傳過訊息才會出現在這裡。綁定前請確認是本人。"),
+      picker.el, h("div", { class: "acts" }, h("button", { class: "btn", type: "button", onclick: closeDialog }, "關閉")));
+  }, { wide: true });
+  await picker.refresh();
+  picker.focus();
+}
+function addGuardian(familyId, studentId) {
+  const name = h("input", { type: "text", "aria-label": "新增家長姓名" });
+  const rel = select(RELATIONS.map((r) => [r, r]), "父", { "aria-label": "關係" });
+  const phoneIn = h("input", { type: "tel", "aria-label": "電話" });
+  const add = h("button", { class: "btn sm primary" }, "新增");
+  add.addEventListener("click", busy(add, async () => {
+    if (!name.value.trim()) return toast("請填家長姓名", "red");
+    await attempt(() => api(`/families/${familyId}/guardians`, { method: "POST", body: { name: name.value.trim(), relationship: rel.value, phone: valueOrNull(phoneIn) } }), "已新增家長");
+    refreshCurrentPage(); openStudent(studentId);
+  }));
+  return h("details", { style: "margin-top:10px" }, h("summary", { class: "small" }, "新增另一位家長"),
+    h("div", { class: "grid3", style: "margin-top:10px;align-items:end" }, field("姓名", name), field("關係", rel), field("電話", phoneIn), h("div", {}, add)));
+}
+async function setEnrollment(id, status, message, after) {
+  await attempt(() => api(`/enrollments/${id}`, { method: "PATCH", body: { status } }), message);
+  refreshCurrentPage(); after && after();
+}
+async function newStudent({ grade = null, courseId = null }) {
+  await loadCourses();
+  openSheet("新增學生", (body, foot) => {
+    const f = {
+      name: h("input", { type: "text", autocomplete: "off", "aria-label": "學生姓名" }), school: h("input", { type: "text" }),
+      no: h("input", { type: "text", placeholder: "留空自動產生" }),
+      gName: h("input", { type: "text", "aria-label": "家長姓名" }), gRel: select(RELATIONS.map((r) => [r, r]), "母"),
+      gPhone: h("input", { type: "tel", "aria-label": "家長電話" }),
+    };
+    let g = grade, familyMode = "new", familyId = null;
+    const chosen = new Set(courseId ? [courseId] : []);
+    const trial = h("input", { type: "checkbox" });
+    const courseBox = h("div");
+    function drawCourses() {
+      const open = state.courses.filter((c) => c.status === "open");
+      const fit = open.filter((c) => !g || !c.grade || c.grade === g || chosen.has(c.id));
+      const rest = open.filter((c) => !fit.includes(c));
+      const item = (c) => h("label", { class: "check", style: "display:flex;margin:6px 0" },
+        h("input", { type: "checkbox", checked: chosen.has(c.id), onchange: (e) => { e.target.checked ? chosen.add(c.id) : chosen.delete(c.id); } }),
+        h("span", {}, c.name, h("span", { class: "muted small" }, `　${scheduleText(c.schedules)}`)));
+      fill(courseBox,
+        fit.length ? h("div", {}, fit.map(item)) : h("p", { class: "muted", style: "margin:0" }, g ? "這個年級沒有開放中的班" : "先選年級"),
+        rest.length ? h("details", { style: "margin-top:6px" }, h("summary", { class: "small" }, "其他年級的班"), h("div", {}, rest.map(item))) : null);
+    }
+    const familyNew = h("div", { class: "grid3" }, field("家長姓名", f.gName), field("關係", f.gRel), field("家長電話", f.gPhone));
+    const famSearch = h("input", { type: "search", placeholder: "兄弟姊妹的姓名、家長姓名或電話", "aria-label": "搜尋家庭" });
+    const famResults = h("div", { class: "results hidden" });
+    let ft;
+    famSearch.addEventListener("input", () => { clearTimeout(ft); ft = setTimeout(async () => {
+      const q = famSearch.value.trim();
+      if (!q) return famResults.classList.add("hidden");
+      const rows = await api("/families?q=" + encodeURIComponent(q));
+      famResults.classList.remove("hidden");
+      famResults.replaceChildren(...(rows.length ? rows.map((r) => h("div", { class: "row" + (familyId === r.id ? " picked" : "") },
+        h("div", { class: "main" }, h("b", {}, r.family_name), h("div", { class: "small muted" }, `學生：${r.students || "—"}　家長：${r.guardians || "—"}`)),
+        h("button", { class: "btn sm", type: "button", onclick: (e) => {
+          familyId = r.id; famResults.querySelectorAll(".row").forEach((x) => x.classList.remove("picked"));
+          e.target.closest(".row").classList.add("picked");
+        } }, "選這個家庭"))) : [h("div", { class: "row muted" }, "找不到")]));
+    }, 250); });
+    const familyOld = h("div", { class: "hidden" }, famSearch, famResults);
+    body.append(
+      h("div", { class: "card" }, h("h3", {}, "學生"), h("div", { class: "grid2" },
+        field("姓名", f.name, { required: true }),
+        field("年級", seg(GRADES, g, (v) => { g = v; drawCourses(); }, "年級"), { required: true }),
+        field("就讀學校", f.school), field("學號", f.no))),
+      h("div", { class: "card" }, h("h3", {}, "家長"),
+        seg([["new", "新的家庭"], ["old", "兄弟姊妹已經在補習班"]], "new", (v) => {
+          familyMode = v; familyNew.classList.toggle("hidden", v !== "new"); familyOld.classList.toggle("hidden", v !== "old");
+        }, "家庭"), h("div", { style: "margin-top:12px" }, familyNew, familyOld)),
+      h("div", { class: "card" }, h("h3", {}, "加入班級", h("label", { class: "check small", style: "margin-left:auto;font-weight:400" }, trial, "試聽")), courseBox));
+    const submit = h("button", { class: "btn primary" }, "新增學生");
+    submit.addEventListener("click", busy(submit, async () => {
+      if (!f.name.value.trim()) return toast("請填學生姓名", "red");
+      if (!g) return toast("請選年級", "red");
+      if (familyMode === "old" && !familyId) return toast("請先搜尋並選一個家庭", "red");
+      if (familyMode === "new" && !f.gName.value.trim() && !confirm("沒有填家長資料，確定先不填？")) return;
+      const payload = { student: { name: f.name.value.trim(), grade: g, school_name: valueOrNull(f.school), student_no: valueOrNull(f.no) },
+        courses: [...chosen].map((cid) => ({ course_id: cid, status: trial.checked ? "trial" : "active" })) };
+      if (familyMode === "old") payload.family_id = familyId;
+      else payload.guardian = { name: valueOrNull(f.gName), relationship: f.gRel.value, phone: valueOrNull(f.gPhone) };
+      const r = await attempt(() => api("/students", { method: "POST", body: payload }), `已新增 ${payload.student.name}`);
+      refreshCurrentPage(); openStudent(r.id);
+    }));
+    foot.append(submit, h("button", { class: "btn", onclick: () => closeSheet() }, "取消"));
+    drawCourses();
+  }, { narrow: true });
+}
+
+// ======================================================================= 班級與課表
+const courseView = { mode: "board", showClosed: false };
+RENDER.courses = async (main) => {
+  await Promise.all([loadCourses(), loadSubjects()]);
+  const courses = state.courses.filter((c) => courseView.showClosed || c.status === "open");
+  const demo = state.courses.filter((c) => c.is_demo && c.status === "open").length;
+  const view = courseView.mode === "board" ? weekBoard(courses.filter((c) => c.status === "open")) : courseList(courses);
+  main.replaceChildren(
+    pageHead("班級與課表",
+      demo ? h("button", { class: "btn danger", onclick: removeDemo }, `移除示範班級（${demo}）`) : null,
+      h("button", { class: "btn primary", onclick: () => courseForm(null) }, "新增班級")),
+    h("div", { class: "toolbar" },
+      seg([["board", "週課表"], ["list", "列表"]], courseView.mode, (v) => { courseView.mode = v; RENDER.courses(main); }, "顯示方式"),
+      h("label", { class: "check small" }, h("input", { type: "checkbox", checked: courseView.showClosed,
+        onchange: (e) => { courseView.showClosed = e.target.checked; RENDER.courses(main); } }), "顯示已結束、封存的班")),
+    view);
+};
+function weekBoard(courses) {
+  const slots = courses.flatMap((c) => c.schedules.map((s) => ({ c, s, start: minutes(s.start_time), end: minutes(s.end_time) })));
+  if (!slots.length) return h("div", { class: "panel empty" }, h("b", {}, "還沒有上課時段"), "按「新增班級」，或在列表裡點班級加上時段。");
+  const first = Math.floor(Math.min(...slots.map((x) => x.start)) / 60) * 60;
+  const last = Math.ceil(Math.max(...slots.map((x) => x.end)) / 60) * 60;
+  const px = 0.95, height = (last - first) * px + 14;
+  const board = h("div", { class: "board", role: "grid", "aria-label": "每週課表" });
+  board.append(h("div", { class: "dh" }), ...[1, 2, 3, 4, 5, 6, 7].map((d) => h("div", { class: "dh" + (d >= 6 ? " we" : "") }, WEEKDAYS[d])));
+  const times = h("div", { class: "times", style: `height:${height}px` });
+  for (let m = first; m <= last; m += 60) times.append(h("span", { style: `top:${(m - first) * px}px` + (m === first ? ";transform:none" : "") }, `${m / 60}:00`));
+  board.append(times);
+  const lines = `background-image:repeating-linear-gradient(to bottom, var(--line) 0 1px, transparent 1px ${60 * px}px);`;
+  for (let d = 1; d <= 7; d++) {
+    const col = h("div", { class: "day", style: `height:${height}px;${lines}` });
+    const items = slots.filter((x) => x.s.weekday === d).sort((a, b) => a.start - b.start || a.end - b.end);
+    const laneEnds = [];
+    for (const it of items) {
+      let lane = laneEnds.findIndex((end) => end <= it.start);
+      if (lane === -1) { lane = laneEnds.length; laneEnds.push(0); }
+      laneEnds[lane] = it.end; it.lane = lane;
+    }
+    const lanes = Math.max(1, laneEnds.length);
+    for (const it of items) {
+      const w = 100 / lanes;
+      col.append(h("button", { class: "lesson g" + (it.c.grade >= 6 && it.c.grade <= 9 ? it.c.grade : 0), type: "button",
+        style: `top:${(it.start - first) * px + 1}px;height:${Math.max((it.end - it.start) * px - 2, 22)}px;left:calc(${it.lane * w}% + 2px);width:calc(${w}% - 4px)`,
+        title: `${it.c.name}　${fmtTime(it.s.start_time)}–${fmtTime(it.s.end_time)}　${it.s.room || ""}`, onclick: () => openCourse(it.c.id) },
+        h("b", {}, it.c.name), `${fmtTime(it.s.start_time)}–${fmtTime(it.s.end_time)}`, it.s.room ? ` ${it.s.room}` : "",
+        h("br"), `${it.c.active_count} 人` + (it.c.trial_count ? `＋試聽 ${it.c.trial_count}` : "")));
+    }
+    board.append(col);
+  }
+  return h("div", { class: "panel" }, h("div", { class: "board-wrap" }, board),
+    h("div", { class: "legend" }, [[6, "國小"], [7, "國一"], [8, "國二"], [9, "國三"], [0, "不分年級"]].map(([g, l]) =>
+      h("span", {}, h("i", { style: `background:var(--g${g})` }), l))));
+}
+function courseList(courses) {
+  const order = (c) => (c.grade >= 6 && c.grade <= 9 ? c.grade : 99);
+  const sorted = [...courses].sort((a, b) => order(a) - order(b) || a.name.localeCompare(b.name));
+  return table(["班級", "年級", "科目", "上課時間", "學費", "人數", ""], sorted.map((c) => clickRow(() => openCourse(c.id),
+    h("td", {}, c.name, c.is_demo ? h("span", { class: "tag red", style: "margin-left:6px" }, "示範") : null,
+      !c.is_public ? h("span", { class: "tag", style: "margin-left:6px" }, "不公開") : null),
+    h("td", { class: "nowrap" }, c.grade_label || "不分年級"),
+    h("td", { class: "nowrap" }, c.subject),
+    h("td", {}, scheduleText(c.schedules)),
+    h("td", { class: "nowrap" }, c.fee != null ? fmtMoney(c.fee) : h("span", { class: "muted" }, "—")),
+    h("td", { class: "nowrap" }, `${c.active_count}`, c.trial_count ? h("span", { class: "muted small" }, `＋試聽 ${c.trial_count}`) : null),
+    h("td", { class: "nowrap" }, c.status === "open" ? "" : COURSE_STATUS[c.status]))), "還沒有班級");
+}
+async function openCourse(id) {
+  const c = await attempt(() => api(`/courses/${id}`));
+  if (!state.subjects.length) await loadSubjects();
+  openSheet(c.name, (body, foot, titleEl) => {
+    titleEl.append(gradeTag(c.grade, c.grade_label));
+    if (c.is_demo) body.append(h("div", { class: "alert error", style: "margin-bottom:14px" }, h("div", { class: "body" }, "示範班級，家長看得到。改成真的資料（拿掉說明裡的「（示範）」），或封存。")));
+    const roster = h("div", { class: "card" }, h("h3", {}, "名單", h("span", { class: "muted" }, `在班 ${c.active_count} 人${c.trial_count ? `、試聽 ${c.trial_count} 人` : ""}`)));
+    if (!c.roster.length) roster.append(h("p", { class: "muted", style: "margin:0" }, "還沒有學生"));
+    else roster.append(h("div", { class: "table-wrap" }, h("table", {},
+      h("tbody", {}, c.roster.map((r) => h("tr", {},
+        h("td", {}, h("button", { class: "btn link", style: "padding-left:0", onclick: () => openStudent(r.student_id) }, r.name),
+          r.status === "trial" ? h("span", { class: "tag amber" }, "試聽") : null, h("span", { class: "sub" }, r.school_name || "")),
+        h("td", { class: "nowrap" }, r.grade_label, c.grade && r.grade !== c.grade ? h("div", { class: "small st-red" }, "年級不同") : null),
+        h("td", { class: "small" }, r.guardian || h("span", { class: "muted" }, "—")),
+        h("td", { style: "text-align:right;white-space:nowrap" },
+          r.status === "trial" ? h("button", { class: "btn sm", onclick: () => setEnrollment(r.enrollment_id, "active", `${r.name} 轉為正式`, () => openCourse(id)) }, "轉正式") : null, " ",
+          h("button", { class: "btn sm danger", onclick: () => { if (confirm(`${r.name} 要退出「${c.name}」？`)) setEnrollment(r.enrollment_id, "dropped", "已退班", () => openCourse(id)); } }, "退班"))))))));
+    if (c.status === "open") {
+      const search = h("input", { type: "search", placeholder: "搜尋要加入的學生（姓名、學校或家長電話）", "aria-label": "搜尋要加入的學生" });
+      const results = h("div", { class: "results hidden" });
+      let t;
+      search.addEventListener("input", () => { clearTimeout(t); t = setTimeout(async () => {
+        const q = search.value.trim();
+        if (!q) return results.classList.add("hidden");
+        const rows = (await api("/students?" + new URLSearchParams({ q, status: "active" }))).filter((s) => !c.roster.some((r) => r.student_id === s.id));
+        results.classList.remove("hidden");
+        const add = (s, status) => attempt(() => api(`/courses/${id}/enroll`, { method: "POST", body: { student_id: s.id, status } }),
+          `${s.name} 已${status === "trial" ? "試聽" : "加入"}${c.name}`).then(() => { refreshCurrentPage(); openCourse(id); });
+        results.replaceChildren(...(rows.length ? rows.map((s) => h("div", { class: "row" },
+          h("div", { class: "main" }, h("div", {}, h("b", {}, s.name), "　", s.grade_label, h("span", { class: "muted small" }, `　${s.school_name || ""}`)),
+            c.grade && s.grade !== c.grade ? h("div", { class: "small st-red" }, `年級和這個班（${c.grade_label}）不同`) : null),
+          h("button", { class: "btn sm", onclick: () => add(s, "trial") }, "試聽"),
+          h("button", { class: "btn sm primary", onclick: () => add(s, "active") }, "加入"))) : [h("div", { class: "row muted" }, "找不到在學的學生")]));
+      }, 250); });
+      roster.append(h("div", { style: "margin-top:12px" }, search, results,
+        h("p", { class: "small", style: "margin:8px 0 0" }, h("button", { class: "btn link", onclick: () => newStudent({ grade: c.grade, courseId: c.id }) }, "新增學生並加入這個班"))));
+    }
+    body.append(roster);
+    const formCard = h("div", { class: "card" }, h("h3", {}, "班級資料"));
+    body.append(formCard);
+    const save = courseFields(formCard, c, async (payload) => {
+      await attempt(() => api(`/courses/${id}`, { method: "PATCH", body: payload }), "已儲存");
+      refreshCurrentPage(); openCourse(id);
+    });
+    foot.append(save, h("button", { class: "btn", onclick: () => closeSheet() }, "關閉"), h("span", { class: "spacer" }),
+      c.used ? h("span", { class: "small muted" }, "有過學生的班不能刪除，不開了請把狀態改成「已結束」")
+             : h("button", { class: "btn danger", onclick: async () => {
+               if (!confirm(`刪除「${c.name}」？`)) return;
+               await attempt(() => api(`/courses/${id}`, { method: "DELETE" }), "已刪除");
+               closeSheet(); refreshCurrentPage();
+             } }, "刪除這個班"));
+  }, { narrow: true });
+}
+function courseForm() {
+  openSheet("新增班級", (body, foot) => {
+    const card = h("div", { class: "card" });
+    body.append(card);
+    const save = courseFields(card, { name: "", subject_id: null, grade: null, start_date: "", end_date: "", fee: null, is_public: true, status: "open", description: "", schedules: [] },
+      async (payload) => {
+        const r = await attempt(() => api("/courses", { method: "POST", body: payload }), `已新增 ${payload.name}`);
+        refreshCurrentPage(); openCourse(r.id);
+      }, "新增班級");
+    foot.append(save, h("button", { class: "btn", onclick: () => closeSheet() }, "取消"));
+  }, { narrow: true });
+}
+function courseFields(box, c, onSave, saveLabel = "儲存") {
+  const f = {
+    name: h("input", { type: "text", value: c.name }),
+    subject: select([["", "選擇科目"], ...state.subjects.map((s) => [s.id, s.name]), ["__new", "新增科目…"]], c.subject_id ?? ""),
+    start: h("input", { type: "date", value: c.start_date || "" }), end: h("input", { type: "date", value: c.end_date || "" }),
+    fee: h("input", { type: "number", min: 0, step: 100, value: c.fee ?? "" }),
+    pub: h("input", { type: "checkbox", checked: c.is_public }), status: select(Object.entries(COURSE_STATUS), c.status),
+    desc: h("textarea", { rows: 2 }, c.description || ""),
+  };
+  f.subject.addEventListener("change", async () => {
+    if (f.subject.value !== "__new") return;
+    const name = (prompt("新科目名稱") || "").trim();
+    if (!name) { f.subject.value = c.subject_id ?? ""; return; }
+    const s = await attempt(() => api("/subjects", { method: "POST", body: { name } }), `已新增科目：${name}`);
+    state.subjects.push(s);
+    f.subject.insertBefore(h("option", { value: s.id }, s.name), f.subject.lastChild);
+    f.subject.value = s.id;
+  });
+  let grade = c.grade ?? 0;
+  const slots = h("div");
+  const addSlot = (s = { weekday: 1, start_time: "18:30", end_time: "20:30", room: "" }) => {
+    const row = h("div", { class: "slot" },
+      select(WEEKDAYS.slice(1).map((d, i) => [i + 1, d]), s.weekday, { "aria-label": "星期" }),
+      h("input", { type: "time", value: fmtTime(s.start_time), "aria-label": "上課時間" }),
+      h("input", { type: "time", value: fmtTime(s.end_time), "aria-label": "下課時間" }),
+      h("input", { type: "text", value: s.room || "", placeholder: "教室", "aria-label": "教室" }),
+      h("button", { class: "btn sm danger", type: "button", "aria-label": "刪除這個時段", onclick: () => row.remove() }, "刪除"));
+    slots.append(row);
+  };
+  (c.schedules || []).forEach(addSlot);
+  box.append(h("div", { class: "grid2" },
+      field("班級名稱", f.name, { required: true, span: true }),
+      field("科目", f.subject, { required: true }), field("狀態", f.status),
+      field("年級", seg([...GRADES, [0, "不分年級"]], grade, (v) => (grade = v), "年級"), { span: true }),
+      field("開課日", f.start, { hint: "留空＝今天" }), field("結束日", f.end),
+      field("學費（每期）", f.fee, { hint: "選填" }),
+      h("label", { class: "check", style: "align-self:end;padding-bottom:6px" }, f.pub, "對外公開"),
+      field("說明", f.desc, { span: true, hint: "家長看得到" })),
+    h("h4", { style: "margin:16px 0 8px;font-size:13px;font-weight:600" }, "每週上課時段"), slots,
+    h("button", { class: "btn sm", type: "button", onclick: () => addSlot() }, "新增時段"));
+  const save = h("button", { class: "btn primary" }, saveLabel);
+  save.addEventListener("click", busy(save, async () => {
+    if (!f.name.value.trim()) return toast("請填班級名稱", "red");
+    if (!f.subject.value || f.subject.value === "__new") return toast("請選科目", "red");
+    const schedules = [...slots.children].map((r) => {
+      const [wd, st, et, room] = r.querySelectorAll("select, input");
+      return { weekday: Number(wd.value), start_time: st.value, end_time: et.value, room: room.value.trim() || null };
+    });
+    if (schedules.some((s) => !s.start_time || !s.end_time)) return toast("每個時段都要填上課、下課時間", "red");
+    if (schedules.some((s) => s.end_time <= s.start_time)) return toast("下課時間要晚於上課時間", "red");
+    await onSave({ name: f.name.value.trim(), subject_id: Number(f.subject.value), grade: grade || null,
+      start_date: valueOrNull(f.start), end_date: valueOrNull(f.end), fee: f.fee.value === "" ? null : Number(f.fee.value),
+      is_public: f.pub.checked, status: f.status.value, description: valueOrNull(f.desc), schedules });
+  }));
+  return save;
+}
+
+// ======================================================================= 廣播
+const BC_STATUS = { sending: "傳送中", sent: "已傳送", partial: "只傳了一部分", failed: "沒有傳出去" };
+const bcDraft = { kind: "grade", grade: 8, course_id: "", body: "", notice_key: "" };
+function broadcastNotice(n) {
+  bcDraft.body = `【${n.title}】\n${n.body || ""}`.trim();
+  bcDraft.notice_key = n.key;
+  const g = [...new Set(n.grades || [])];
+  if (g.length === 1) { bcDraft.kind = "grade"; bcDraft.grade = g[0]; } else if (!g.length || g.length === 4) bcDraft.kind = "all";
+  closeSheet(false);
+  go("broadcast");
+}
+RENDER.broadcast = async (main) => {
+  const [data, content] = await Promise.all([api("/broadcasts"), loadContent().catch(() => ({ notices: [] })), loadCourses()]);
+  const openCourses = state.courses.filter((c) => c.status === "open");
+  let requestId = newId(), image = null, aud = null, quota = null;
+  const notices = content.notices.filter((n) => n.status === "live");
+  const text = h("textarea", { rows: 9, maxlength: 4800, "aria-label": "內容" }, bcDraft.body);
+  const who = h("div");
+  const cost = h("div", { class: "small muted" });
+  const prev = preview([]);
+  const noticeSel = select([["", "從公告帶入…"], ...notices.map((n) => [n.key, `${NOTICE_TYPES[n.category]}｜${n.title}`])], bcDraft.notice_key, { "aria-label": "從公告帶入" });
+  const picker = imagePicker({ current: null, onChange: (img) => { image = img; paint(); },
+    disabled: data.image_ok ? null : "要先知道 bot 的 https 網址才能附圖" });
+  const gradeSeg = seg(GRADES.map(([g, l]) => [g, l]), bcDraft.grade, (v) => { bcDraft.grade = v; refreshAudience(); }, "年級");
+  const courseSel = select([["", "選擇班級"], ...openCourses.map((c) => [c.id, c.name])], bcDraft.course_id, { "aria-label": "班級", style: "max-width:320px",
+    onchange: (e) => { bcDraft.course_id = e.target.value; refreshAudience(); } });
+  const kindSeg = seg([["all", "全體好友"], ["grade", "某個年級"], ["course", "某一班"]], bcDraft.kind, (v) => { bcDraft.kind = v; showKind(); refreshAudience(); }, "對象");
+  const showKind = () => { gradeSeg.classList.toggle("hidden", bcDraft.kind !== "grade"); courseSel.classList.toggle("hidden", bcDraft.kind !== "course"); };
+  function noticeImage() {
+    const n = notices.find((x) => x.key === bcDraft.notice_key);
+    return n?.image && data.image_ok ? "/admin/api/content/image?path=" + encodeURIComponent(n.image) : null;
+  }
+  function paint() {
+    if (bcDraft.kind === "all") who.replaceChildren(h("b", {}, "全體好友"), quota?.friends ? `，大約 ${quota.friends} 人` : "");
+    else if (!aud) who.replaceChildren(h("span", { class: "muted" }, bcDraft.kind === "course" && !bcDraft.course_id ? "請選班級" : "…"));
+    else fill(who, h("b", {}, `${aud.recipients} 位家長`), `（${aud.students} 位學生）`,
+      aud.missing.length ? h("div", { class: "small st-amber" }, `家長還沒綁定 LINE、收不到：${aud.missing.slice(0, 15).join("、")}${aud.missing.length > 15 ? ` 等 ${aud.missing.length} 位` : ""}`) : null);
+    const n = bcDraft.kind === "all" ? quota?.friends : aud?.recipients;
+    const parts = [];
+    if (n != null) parts.push(`這次大約用掉 ${n} 則訊息額度`);
+    if (quota?.ok) parts.push(`這個月已用 ${quota.used}${quota.limit != null ? ` / ${quota.limit}` : ""} 則`);
+    else if (quota) parts.push(`查不到額度：${quota.error}`);
+    cost.textContent = parts.join("，");
+    cost.className = "small " + (quota?.ok && quota.limit != null && n != null && quota.used + n > quota.limit ? "st-red" : "muted");
+    const src = image ? image.data : noticeImage();
+    prev.render([{ kind: "text", text: text.value.trim() || "（內容）" }, ...(src ? [{ kind: "image", src }] : [])]);
+  }
+  async function refreshAudience() {
+    aud = null; paint();
+    if (bcDraft.kind === "all" || (bcDraft.kind === "course" && !bcDraft.course_id)) return;
+    const params = bcDraft.kind === "grade" ? { kind: "grade", grade: bcDraft.grade } : { kind: "course", course_id: bcDraft.course_id };
+    try { aud = await api("/broadcasts/audience?" + new URLSearchParams(params)); }
+    catch (e) { who.replaceChildren(h("span", { class: "st-red" }, e.message)); return; }
+    paint();
+  }
+  text.addEventListener("input", () => { bcDraft.body = text.value; paint(); });
+  noticeSel.addEventListener("change", () => {
+    const n = notices.find((x) => x.key === noticeSel.value);
+    bcDraft.notice_key = noticeSel.value;
+    if (n) { text.value = bcDraft.body = `【${n.title}】\n${n.body || ""}`.trim(); }
+    paint();
+  });
+  const send = h("button", { class: "btn primary" }, "傳送");
+  send.addEventListener("click", busy(send, async () => {
+    const body = text.value.trim();
+    if (!body) return toast("請寫要傳的內容", "red");
+    if (bcDraft.kind === "course" && !bcDraft.course_id) return toast("請選班級", "red");
+    if (bcDraft.kind !== "all" && aud && !aud.recipients) return toast("這些家長都還沒綁定 LINE，沒有人收得到", "red");
+    const target = bcDraft.kind === "all" ? "全體好友" : `${aud?.label || ""}（${aud?.recipients ?? "?"} 位）`;
+    const n = bcDraft.kind === "all" ? quota?.friends : aud?.recipients;
+    if (!confirm(`傳給${target}？${n != null ? `\n大約用掉 ${n} 則訊息額度。` : ""}\n傳出去就不能收回。`)) return;
+    const r = await attempt(() => api("/broadcasts", { method: "POST", body: { request_id: requestId, kind: bcDraft.kind, grade: bcDraft.grade,
+      course_id: bcDraft.course_id ? Number(bcDraft.course_id) : null, body, image, notice_key: bcDraft.notice_key || null } }));
+    if (r.status === "failed") toast("沒有傳出去：" + (r.error || ""), "red");
+    else toast(r.status === "partial" ? "只傳了一部分：" + (r.error || "") : "已傳送", r.status === "partial" ? "red" : "");
+    requestId = newId();
+    if (r.status !== "failed") Object.assign(bcDraft, { body: "", notice_key: "" });
+    reload();
+  }));
+  main.replaceChildren(pageHead("廣播"),
+    h("div", { class: "editor" },
+      h("div", { class: "stack" },
+        field("傳給", h("div", { class: "stack", style: "gap:8px" }, kindSeg, gradeSeg, courseSel, who)),
+        h("div", { class: "field" }, h("span", { class: "lab" }, "內容", h("em", {}, "必填")), noticeSel, text),
+        field("圖片", picker.el, { hint: "選填" }),
+        h("div", { style: "display:flex;gap:12px;align-items:center;flex-wrap:wrap" }, send, cost)),
+      h("div", { class: "side-preview" }, prev.el)),
+    h("section", { class: "block", style: "margin-top:28px" }, h("h2", { class: "sec" }, "傳過的廣播"),
+      table(["時間", "傳給", "內容", "狀態", "傳送的人"], data.items.map((b) => h("tr", {},
+        h("td", { class: "nowrap" }, fmtStamp(b.created_at)),
+        h("td", {}, b.audience_label, b.recipients != null ? h("span", { class: "sub" }, `${b.recipients} 位`) : null),
+        h("td", {}, h("span", { class: "sub" }, b.body.split("\n")[0]), b.image ? h("span", { class: "muted small" }, "附圖") : null),
+        h("td", { class: "nowrap" }, h("span", { class: b.status === "sent" ? "" : "st-red" }, BC_STATUS[b.status] || b.status),
+          b.error ? h("span", { class: "sub st-red", title: b.error }, b.error) : null),
+        h("td", { class: "nowrap" }, b.sent_by))), "還沒有傳過")));
+  showKind(); paint(); refreshAudience();
+  api("/line/quota").then((q) => { quota = q; paint(); }).catch(() => {});
+};
+
+// ======================================================================= 對話紀錄
+const msgFilter = { human: false };
+const ROUTE = { rule: "固定回覆", ai: "AI 回答", staff: "交給櫃台" };
+RENDER.messages = async (main) => {
+  const rows = await api("/messages?" + new URLSearchParams({ only_human: msgFilter.human, limit: 80 }));
+  const tabs = h("div", { class: "tabs" },
+    h("button", { type: "button", "aria-pressed": String(!msgFilter.human), onclick: () => { msgFilter.human = false; reload(); } }, "全部"),
+    h("button", { type: "button", "aria-pressed": String(msgFilter.human), onclick: () => { msgFilter.human = true; reload(); } }, "需要真人"));
+  const how = (r) => r.handled_by === "staff" ? "AI 暫停中" : r.detail?.fallback ? "關鍵字比對" : ROUTE[r.handled_by] || r.handled_by;
+  main.replaceChildren(pageHead("對話紀錄", h("button", { class: "btn", onclick: reload }, "重新整理")), tabs,
+    table(["時間", "家長", "訊息", "處理"], rows.map((r) => h("tr", {},
+      h("td", { class: "nowrap" }, fmtStamp(r.created_at)),
+      h("td", { class: "nowrap" }, r.guardian || r.display_name || "—", r.guardian ? h("span", { class: "sub" }, "已綁定") : null),
+      h("td", {}, h("div", {}, r.message_type === "text" ? r.content : r.message_type === "follow" ? "（加好友）" : `（${r.message_type}）`),
+        r.reply ? h("details", { class: "msg-reply" }, h("summary", {}, "機器人的回覆"), h("pre", {}, r.reply)) : null),
+      h("td", {}, h("div", { class: "nowrap" }, how(r)),
+        r.needs_human ? h("div", { class: "st-red nowrap" }, "需要真人") : null,
+        r.alert ? h("div", { class: "small nowrap " + (r.alert.error ? "st-red" : "muted") }, r.alert.error ? "通知員工失敗" : `已通知 ${r.alert.sent_to} 位員工`) : null,
+        r.detail?.images_skipped ? h("div", { class: "small st-amber nowrap" }, `${r.detail.images_skipped} 張圖沒傳出去`) : null))),
+      msgFilter.human ? "沒有需要真人回覆的訊息" : "還沒有家長傳訊息"));
+};
+
+// ======================================================================= 機器人測試
+RENDER.test = async (main) => {
+  const p = preview([{ kind: "note", text: "這裡的訊息不會真的傳出去" }], { title: "測試", tall: true });
+  const input = h("input", { type: "text", "aria-label": "測試訊息", maxlength: 500 });
+  const log = [];
+  async function send(text) {
+    text = String(text || "").trim();
+    if (!text) return;
+    log.filter((x) => x.kind === "quick").forEach((x) => (x.dead = true));
+    log.push({ kind: "me", text });
+    input.value = "";
+    p.render(log.filter((x) => !x.dead));
+    try {
+      const r = await api("/preview", { method: "POST", body: { text } });
+      let quick = [];
+      for (const m of r.messages) {
+        if (m.type === "image") log.push({ kind: "image", src: m.previewImageUrl });
+        else log.push({ kind: "text", text: m.text });
+        if (m.quickReply) quick = m.quickReply.items.map((i) => i.action.text);
+      }
+      if (!r.messages.length) log.push({ kind: "note", text: "（不回覆）" });
+      else log.push({ kind: "route", text: `${r.detail?.fallback ? "關鍵字比對" : ROUTE[r.handled_by] || r.handled_by}${r.needs_human ? "，需要真人" : ""}` });
+      if (quick.length) log.push({ kind: "quick", items: quick, onClick: send });
+    } catch (e) { log.push({ kind: "note", text: e.message }); }
+    p.render(log.filter((x) => !x.dead));
+  }
+  p.el.append(h("form", { class: "input", onsubmit: (e) => { e.preventDefault(); send(input.value); } }, input, h("button", { class: "btn primary sm", type: "submit" }, "送出")));
+  const kb = h("pre", { class: "kb" }, "載入中…");
+  const details = h("details", { ontoggle: async () => { if (details.open && kb.textContent === "載入中…") kb.textContent = (await api("/knowledge")).text; } },
+    h("summary", {}, "機器人用的資料"), kb);
+  main.replaceChildren(pageHead("機器人測試"),
+    h("div", { class: "testgrid" },
+      p.el,
+      h("div", { class: "stack" },
+        h("div", { class: "card" }, h("h3", {}, "選單按鈕"), h("div", { class: "samples" }, MAIN_MENU.map((q) => h("button", { type: "button", class: "btn sm", onclick: () => send(q) }, q)))),
+        h("div", { class: "card" }, h("h3", {}, "常見問法"), h("div", { class: "samples" },
+          ["國二數學什麼時候上課？", "國二有考試嗎", "國二行事曆", "明天颱風停課嗎", "補習班在哪裡", "學費怎麼繳", "我想看小孩的成績", "家長綁定", "你好"]
+            .map((q) => h("button", { type: "button", class: "btn sm", onclick: () => send(q) }, q)))),
+        h("div", { class: "card" }, details))));
+  input.focus();
+};
+
+// ======================================================================= 設定
+RENDER.settings = async (main) => {
+  const [cfg, s, audit, staff, alerts] = await Promise.all([api("/settings"), refreshStatus(), api("/audit?limit=12"), api("/staff"), api("/alerts?limit=10")]);
+  const saveSetting = async (patch, okText) => { await attempt(() => api("/settings", { method: "PUT", body: patch }), okText); };
+  const welcome = h("input", { type: "checkbox", checked: cfg.welcome_on_follow, onchange: (e) => saveSetting({ welcome_on_follow: e.target.checked }, "已儲存") });
+  const unanswered = h("input", { type: "checkbox", checked: cfg.notify_unanswered, onchange: (e) => saveSetting({ notify_unanswered: e.target.checked }, "已儲存") });
+  const quotaBox = h("dd", {}, "…");
+  api("/line/quota").then((q) => quotaBox.replaceChildren(q.ok ? `這個月已用 ${q.used} 則${q.limit != null ? `，上限 ${q.limit} 則` : "（沒有上限）"}` : h("span", { class: "st-red" }, q.error))).catch(() => {});
+  const staffRows = staff.map((m) => h("tr", {},
+    h("td", {}, m.name),
+    h("td", {}, m.line ? (m.line_name || "（沒有名稱）") : h("span", { class: "muted" }, "沒有綁 LINE"), m.line && !m.following ? h("div", { class: "small st-red" }, "已封鎖官方帳號") : null),
+    h("td", {}, h("label", { class: "check" }, h("input", { type: "checkbox", checked: m.notify_human, "aria-label": `${m.name} 收通知`,
+      onchange: (e) => attempt(() => api(`/staff/${m.id}`, { method: "PATCH", body: { notify_human: e.target.checked } }), "已儲存") }), "收通知")),
+    h("td", { class: "right nowrap" },
+      m.line ? h("button", { class: "btn sm", onclick: async () => {
+        if (!confirm(`傳一則測試通知給 ${m.name}？會用掉 1 則訊息額度。`)) return;
+        await attempt(() => api(`/staff/${m.id}/test`, { method: "POST" }), "已傳送");
+      } }, "測試") : null, " ",
+      h("button", { class: "btn sm danger", onclick: async () => {
+        if (!confirm(`移除 ${m.name}？之後不會再收到通知。`)) return;
+        await attempt(() => api(`/staff/${m.id}`, { method: "DELETE" }), "已移除"); reload();
+      } }, "移除"))));
+  const r = s.content?.report;
+  const syncBtn = h("button", { class: "btn sm" }, "立即同步");
+  syncBtn.addEventListener("click", busy(syncBtn, async () => { await attempt(() => api("/sync", { method: "POST" }), "同步完成"); reload(); }));
+  main.replaceChildren(pageHead("設定"),
+    h("section", { class: "block" }, h("h2", { class: "sec" }, "需要真人時通知員工", h("button", { class: "btn sm", onclick: addStaff }, "新增員工")),
+      table(["姓名", "LINE", "", ""], staffRows, "還沒有設定。按「新增員工」，選員工自己的 LINE。"),
+      h("div", { style: "margin-top:10px;display:grid;gap:4px" },
+        h("label", { class: "check" }, unanswered, "機器人答不出來時也通知"),
+        h("span", { class: "small muted" }, "家長按「找真人客服」一定會通知。每通知一位員工用掉 1 則訊息額度，同一位家長 30 分鐘內只通知一次。")),
+      alerts.length ? h("details", { style: "margin-top:12px" }, h("summary", { class: "small" }, "最近的通知"),
+        h("div", { style: "margin-top:8px" }, table(["時間", "內容", "結果"], alerts.map((a) => h("tr", {},
+          h("td", { class: "nowrap" }, fmtStamp(a.created_at)),
+          h("td", {}, a.summary.split("\n")[0]),
+          h("td", { class: "nowrap " + (a.error ? "st-red" : "") }, a.error ? a.error : `通知了 ${a.sent_to} 位`))), ""))) : null),
+    h("section", { class: "block" }, h("h2", { class: "sec" }, "LINE"),
+      h("div", { class: "panel pad" }, h("dl", { class: "kv" },
+        h("dt", {}, "訊息額度"), quotaBox,
+        h("dt", {}, "歡迎訊息"), h("dd", {}, h("label", { class: "check" }, welcome, "家長加好友時，機器人傳歡迎訊息"),
+          h("div", { class: "small muted" }, "官方帳號後台也設定了「加入好友的歡迎訊息」的話，兩邊只開一邊。"))))),
+    h("section", { class: "block" }, h("h2", { class: "sec" }, "系統"),
+      h("div", { class: "panel pad" }, h("dl", { class: "kv" },
+        h("dt", {}, "回答方式"), h("dd", {}, s.ai.mode === "claude" ? `AI（${s.ai.model}）` : "關鍵字比對（要用 AI，請在 .env 填 ANTHROPIC_API_KEY 再重新啟動 bot）"),
+        h("dt", {}, "AI 讀圖"), h("dd", {}, s.ai.vision ? s.ai.vision_model : "沒開"),
+        h("dt", {}, "bot 的網址"), h("dd", {}, s.public_base || "還不知道"),
+        h("dt", {}, "補習班資料夾"), h("dd", {}, s.content.dir ? [h("span", { class: "code", style: "letter-spacing:0" }, s.content.dir), " ",
+          h("button", { class: "btn link small", onclick: () => navigator.clipboard?.writeText(s.content.dir).then(() => toast("已複製")) }, "複製")] : "已關閉"),
+        h("dt", {}, "最近一次同步"), h("dd", {}, r ? [fmtStamp(r.synced_at), r.error ? h("span", { class: "st-red" }, "　失敗：" + r.error) : "", " ", syncBtn] : ["還沒有", " ", syncBtn]),
+        h("dt", {}, "資料庫"), h("dd", {}, s.db.ok ? (s.db.schema_ok ? "正常" : "需要升級（重新啟動 bot 會自動升級）") : "連不上：" + s.db.error)),
+        r && (r.problems.length || r.notes.length) ? h("details", { style: "margin-top:10px" }, h("summary", { class: "small" }, `資料夾的提醒（${r.problems.length + r.notes.length}）`),
+          h("ul", { class: "small" }, [...r.problems.map((x) => h("li", { class: "problem" }, x)), ...r.notes.map((x) => h("li", {}, x))])) : null)),
+    h("section", { class: "block" }, h("h2", { class: "sec" }, "最近的修改"),
+      table(["時間", "誰", "做了什麼"], audit.map((a) => h("tr", {}, h("td", { class: "muted nowrap" }, fmtStamp(a.created_at)), h("td", { class: "nowrap" }, a.actor), h("td", {}, a.summary))), "還沒有修改紀錄")));
+};
+function addStaff() {
+  let chosen = null;
+  const name = h("input", { type: "text", maxlength: 30, "aria-label": "員工姓名" });
+  const picker = lineList({
+    load: (q) => api("/staff/line-candidates?" + new URLSearchParams({ q })),
+    pickLabel: "選這個",
+    onPick: (c, el) => {
+      chosen = c;
+      el.parentElement.querySelectorAll(".pick").forEach((x) => x.classList.remove("picked"));
+      el.classList.add("picked");
+      if (!name.value.trim() && c.display_name) name.value = c.display_name;
+    },
+  });
+  const add = h("button", { class: "btn primary", type: "button" }, "新增");
+  add.addEventListener("click", busy(add, async () => {
+    if (!name.value.trim()) return toast("請填員工姓名", "red");
+    if (!chosen) return toast("請選員工的 LINE", "red");
+    await attempt(() => api("/staff", { method: "POST", body: { name: name.value.trim(), line_user_id: chosen.line_user_id } }), "已新增");
+    closeDialog(); reload();
+  }));
+  openDialog("新增收通知的員工", (box) => {
+    box.append(field("姓名", name),
+      h("div", { class: "field" }, h("span", { class: "lab" }, "員工的 LINE"),
+        h("span", { class: "note" }, "請員工先用自己的 LINE 加官方帳號好友，傳一句話。"), picker.el),
+      h("div", { class: "acts" }, h("button", { class: "btn", type: "button", onclick: closeDialog }, "取消"), add));
+  }, { wide: true });
+  picker.refresh();
+}
+
+// ======================================================================= 開始
+(async function start() {
+  try { state.me = await api("/me"); renderShell(); } catch { /* 沒登入 → 已顯示登入畫面 */ }
+})();
+</script>
+</body>
+</html>

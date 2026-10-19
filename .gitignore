@@ -1,0 +1,7 @@
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+demo/output/last_claude_request.json
+# 「補習班資料」資料夾是補習班的內容（含圖片、榜單），不是程式碼
+補習班資料/

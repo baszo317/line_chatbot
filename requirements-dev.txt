@@ -1,0 +1,4 @@
+-r requirements.txt
+pytest>=8
+pillow>=10        # rich menu image + tests
+playwright>=1.45  # demo screenshots; afterwards run once: playwright install chromium

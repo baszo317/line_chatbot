@@ -1,0 +1,243 @@
+{
+  "generated_at": "2026-10-18T22:26:33",
+  "ai": "replay",
+  "cases": [
+    {
+      "id": "case1",
+      "n": 1,
+      "title": "新家長加入好友",
+      "steps": [
+        {
+          "user": null,
+          "event": "follow",
+          "bot": [
+            {
+              "text": "王媽媽 您好！歡迎加入高明補習班 👋\n我是 AI 小助理，可以回答課程、上課時間、行事曆、收費、交通和榜單等問題。\n\n・點下方選單可以快速查詢\n・也可以直接打字問我，例如「國二數學什麼時候上課？」\n\n需要真人協助時，請點「找真人客服」。",
+              "quick_replies": [
+                "課程介紹",
+                "行事曆",
+                "榜單",
+                "交通資訊",
+                "聯絡我們",
+                "常見問題"
+              ]
+            }
+          ],
+          "path": {
+            "intent": "greeting",
+            "handled_by": "rule",
+            "needs_human": false,
+            "model": null,
+            "latency_ms": null,
+            "tool_calls": null
+          },
+          "path_label": "固定回覆"
+        }
+      ]
+    },
+    {
+      "id": "case2",
+      "n": 2,
+      "title": "點圖文選單「課程介紹」",
+      "steps": [
+        {
+          "user": "課程介紹",
+          "event": "message",
+          "bot": [
+            {
+              "text": "📚 課程與上課時間\n⚠️ 公告：【示範】颱風停課：10/19 晚上課程停課\n\n【國小】\n・國小數學班\n  週六 10:00–12:00\n  學費 3,600 元／期\n・國小英文班\n  週三 16:30–18:00\n  學費 3,400 元／期\n\n【國一】\n・國一數學班\n  週二、週四 18:30–20:30\n  學費 4,200 元／期\n\n【國二】\n・國二數學 A 班\n  週一、週三 18:30–20:30\n  學費 4,800 元／期\n・國二英文 A 班\n  週二 18:30–20:30\n  學費 4,500 元／期\n\n【國三】\n・國三理化衝刺班\n  週五 18:30–21:00；週六 13:30–16:30\n  學費 5,200 元／期\n\n想知道更多，可以直接打字問我，例如「國二數學一週上幾次？」",
+              "quick_replies": []
+            }
+          ],
+          "path": {
+            "intent": "course",
+            "handled_by": "rule",
+            "needs_human": false,
+            "model": null,
+            "latency_ms": null,
+            "tool_calls": null
+          },
+          "path_label": "固定回覆"
+        }
+      ]
+    },
+    {
+      "id": "case3",
+      "n": 3,
+      "title": "自由提問：上課次數與學費",
+      "steps": [
+        {
+          "user": "國二數學一週上幾次？學費多少？",
+          "event": "message",
+          "bot": [
+            {
+              "text": "國二數學 A 班一週上 2 次：\n・週一 18:30–20:30\n・週三 18:30–20:30\n學費是每期 4,800 元，可以在櫃台付現金或轉帳。\n\n想先感受上課方式的話，新生也可以預約免費試聽一堂喔！",
+              "quick_replies": []
+            }
+          ],
+          "path": {
+            "intent": "course",
+            "handled_by": "ai",
+            "needs_human": false,
+            "model": "claude-haiku-5-5",
+            "latency_ms": 86,
+            "tool_calls": {
+              "usage": {
+                "input_tokens": 0,
+                "output_tokens": 0
+              },
+              "used_titles": [
+                "國二數學 A 班",
+                "學費與繳費方式",
+                "試聽與報名"
+              ]
+            }
+          },
+          "path_label": "AI 回答（模擬回應）"
+        }
+      ]
+    },
+    {
+      "id": "case4",
+      "n": 4,
+      "title": "颱風停課",
+      "steps": [
+        {
+          "user": "明天颱風會停課嗎？",
+          "event": "message",
+          "bot": [
+            {
+              "text": "會的。依照補習班最新公告，因為颱風影響，明天晚上的課程全部停課，補課時間會另外在 LINE 公告。\n\n出門前也請留意縣市政府的停班停課消息，注意安全喔！",
+              "quick_replies": []
+            }
+          ],
+          "path": {
+            "intent": "announcement",
+            "handled_by": "ai",
+            "needs_human": false,
+            "model": "claude-haiku-5-5",
+            "latency_ms": 3,
+            "tool_calls": {
+              "usage": {
+                "input_tokens": 0,
+                "output_tokens": 0
+              },
+              "used_titles": [
+                "颱風停課公告",
+                "颱風與停課規定"
+              ]
+            }
+          },
+          "path_label": "AI 回答（模擬回應）"
+        }
+      ]
+    },
+    {
+      "id": "case5",
+      "n": 5,
+      "title": "資料裡沒有的問題 → 轉真人",
+      "steps": [
+        {
+          "user": "學費可以刷卡分期嗎？",
+          "event": "message",
+          "bot": [
+            {
+              "text": "目前補習班的資料只寫到繳費方式是「櫃台付現金或轉帳」，沒有刷卡或分期的說明，我不想給您錯誤的資訊 🙏\n可以點「找真人客服」，請櫃台老師幫您確認。",
+              "quick_replies": [
+                "找真人客服",
+                "聯絡我們",
+                "常見問題"
+              ]
+            }
+          ],
+          "path": {
+            "intent": "fee",
+            "handled_by": "ai",
+            "needs_human": true,
+            "model": "claude-haiku-5-5",
+            "latency_ms": 3,
+            "tool_calls": {
+              "usage": {
+                "input_tokens": 0,
+                "output_tokens": 0
+              },
+              "used_titles": [
+                "學費與繳費方式"
+              ]
+            }
+          },
+          "path_label": "AI 回答（模擬回應）・建議轉真人"
+        },
+        {
+          "user": "找真人客服",
+          "event": "message",
+          "bot": [
+            {
+              "text": "好的，已轉給櫃台老師 🙋\n接下來 30 分鐘內，您打的訊息會由專人回覆（AI 先暫停）。\n\n櫃台電話：0900-000-000（示範號碼）\n服務時間：週一至週五 14:00–21:30、週六 09:00–17:00（示範）\n\n想回到 AI 助理，請點「回到AI助理」。",
+              "quick_replies": [
+                "回到AI助理"
+              ]
+            }
+          ],
+          "path": {
+            "intent": "handoff",
+            "handled_by": "rule",
+            "needs_human": true,
+            "model": null,
+            "latency_ms": null,
+            "tool_calls": null
+          },
+          "path_label": "轉給櫃台老師（AI 暫停）"
+        },
+        {
+          "user": "刷卡會加手續費嗎？",
+          "event": "message",
+          "bot": [],
+          "path": {
+            "intent": "handoff",
+            "handled_by": "staff",
+            "needs_human": true,
+            "model": null,
+            "latency_ms": null,
+            "tool_calls": null
+          },
+          "path_label": "AI 暫停中：交給櫃台老師在後台回覆"
+        }
+      ]
+    },
+    {
+      "id": "case6",
+      "n": 6,
+      "title": "問到孩子的個人資料",
+      "steps": [
+        {
+          "user": "我想看我家小孩最近的數學成績",
+          "event": "message",
+          "bot": [
+            {
+              "text": "查詢孩子的成績屬於「家長專屬功能」，要先綁定帳號才能使用，目前還在準備中，開放時補習班會提供綁定碼給您。\n\n現在想了解孩子的學習狀況，可以點「找真人客服」，或撥打櫃台電話 0900-000-000（示範號碼）。",
+              "quick_replies": []
+            }
+          ],
+          "path": {
+            "intent": "personal",
+            "handled_by": "ai",
+            "needs_human": false,
+            "model": "claude-haiku-5-5",
+            "latency_ms": 3,
+            "tool_calls": {
+              "usage": {
+                "input_tokens": 0,
+                "output_tokens": 0
+              },
+              "used_titles": [
+                "聯絡電話與服務時間"
+              ]
+            }
+          },
+          "path_label": "AI 回答（模擬回應）"
+        }
+      ]
+    }
+  ]
+}
